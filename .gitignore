@@ -1,0 +1,25 @@
+# ─── Python ───────────────────────────────────────
+# Ambiente virtual (pesado e específico do seu PC — nunca vai pro repo)
+.venv/
+__pycache__/
+*.pyc
+
+# ─── Node / React (a partir da Fase 2) ────────────
+node_modules/
+dist/
+build/
+
+# ─── Segredos / ambiente ──────────────────────────
+.env
+*.local
+
+# ─── Windows ──────────────────────────────────────
+Thumbs.db
+Desktop.ini
+
+# ─── Editores ─────────────────────────────────────
+.vscode/
+.idea/
+
+# ─── Material pessoal de estudo (não publicar) ────
+GUIA/
