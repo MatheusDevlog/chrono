@@ -2,6 +2,9 @@ import time
 import psutil
 import webview
 
+DEV = True
+URL_DEV = 'http://localhost:5173'
+ARQUIVO_BUILD = 'frontend/dist/index.html'
 APP_ALVO = 'notepad.exe'
 INTERVALO = 5
 
@@ -22,30 +25,6 @@ class API:
 
 api = API()
 
-HTML_STATUS = """
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <style>
-    body {
-      font-family: Segoe UI, sans-serif;
-      background: #12302D;
-      color: #F2EEE6;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      height: 100vh; margin: 0;
-    }
-    h1 { font-size: 20px; margin: 0 0 8px; }
-    p  { color: #A6BAB5; margin: 0; font-size: 14px; }
-  </style>
-</head>
-<body>
-  <h1>Chrono está de olho</h1>
-  <p>Vigiando os apps em segundo plano...</p>
-</body>
-</html>
-"""
 
 HTML_COBRANCA = """
 <!DOCTYPE html>
@@ -132,12 +111,25 @@ def vigiar():
             mostrar_cobranca()
 
 
+def tamanho_janela(proporcao=0.65):
+  tela= webview.screens[0]
+  largura = int(tela.width * proporcao)
+  altura = int(tela.height * proporcao)
+  return largura, altura
+
+
 def main():
+    largura, altura = tamanho_janela(0.65)
+    destino = URL_DEV if DEV else ARQUIVO_BUILD
+
     webview.create_window(
         'Chrono',
-        html=HTML_STATUS,
-        width=360,
-        height=180,
+        url=destino,
+        js_api=api,
+        width=largura,
+        height=altura,
+        resizable=True,
+        min_size=(900, 600),
     )
     webview.start(vigiar)
 
