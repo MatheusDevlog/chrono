@@ -1,14 +1,15 @@
 import os
 import time
+import threading
 import psutil
 import webview
 
 APP_ALVO = 'notepad.exe'
 INTERVALO = 5
 
-# Caminho absoluto até app/web/index.html (funciona rodando de qualquer pasta).
 PASTA_APP = os.path.dirname(os.path.abspath(__file__))
 ARQUIVO_UI = os.path.join(PASTA_APP, 'web', 'index.html')
+ARQUIVO_COBRANCA = os.path.join(PASTA_APP,'web', 'cobranca.html')
 
 tarefas_concluidas = False
 janela_cobranca = None
@@ -24,50 +25,7 @@ class API:
         print('[Chrono] Ignorado. Cobro de novo se o app continuar aberto.')
         fechar_cobranca()
 
-
 api = API()
-
-
-HTML_COBRANCA = """
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <style>
-    body {
-      font-family: Segoe UI, sans-serif;
-      background: #12302D;
-      color: #F2EEE6;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      height: 100vh; margin: 0; text-align: center;
-    }
-    h1 { font-size: 20px; margin: 0 0 8px; color: #F39A1F; }
-    p  { color: #A6BAB5; margin: 0 24px 24px; font-size: 14px; }
-    .botoes { display: flex; gap: 16px; }
-    button {
-      font-size: 15px; padding: 10px 24px;
-      border: none; border-radius: 8px; cursor: pointer;
-    }
-    .concluir { background: #F39A1F; color: #12302D; }
-    .ignorar  { background: #C42E4C; color: #F2EEE6; }
-  </style>
-</head>
-<body>
-  <h1>Ei! Suas tarefas ainda não terminaram!</h1>
-  <p>Feche o app de recompensa ou conclua o que combinou primeiro.</p>
-  <div class="botoes">
-    <button class="concluir" onclick="concluir()">Já concluí!</button>
-    <button class="ignorar" onclick="ignorar()">Agora não</button>
-  </div>
-
-  <script>
-    function concluir() { window.pywebview.api.concluir_tarefas(); }
-    function ignorar()  { window.pywebview.api.ignorar(); }
-  </script>
-</body>
-</html>
-"""
 
 def app_aberto(nome_processo):
     for processo in psutil.process_iter(['name']):
@@ -85,7 +43,7 @@ def mostrar_cobranca():
     global janela_cobranca
     janela_cobranca = webview.create_window(
         'Chrono - Cobrança',
-        html=HTML_COBRANCA,
+        url=ARQUIVO_COBRANCA,
         js_api=api,
         on_top=True,
         width=460,
@@ -132,7 +90,8 @@ def main():
         resizable=True,
         min_size=(900, 600),
     )
-    webview.start(vigiar)
+    threading.Thread(target=vigiar, daemon=True).start()
+    webview.start()
 
 
 if __name__ == "__main__":
