@@ -1,12 +1,14 @@
+import os
 import time
 import psutil
 import webview
 
-DEV = True
-URL_DEV = 'http://localhost:5173'
-ARQUIVO_BUILD = 'frontend/dist/index.html'
 APP_ALVO = 'notepad.exe'
 INTERVALO = 5
+
+# Caminho absoluto até app/web/index.html (funciona rodando de qualquer pasta).
+PASTA_APP = os.path.dirname(os.path.abspath(__file__))
+ARQUIVO_UI = os.path.join(PASTA_APP, 'web', 'index.html')
 
 tarefas_concluidas = False
 janela_cobranca = None
@@ -112,19 +114,18 @@ def vigiar():
 
 
 def tamanho_janela(proporcao=0.65):
-  tela= webview.screens[0]
-  largura = int(tela.width * proporcao)
-  altura = int(tela.height * proporcao)
-  return largura, altura
+    tela = webview.screens[0]
+    largura = int(tela.width * proporcao)
+    altura = int(tela.height * proporcao)
+    return largura, altura
 
 
 def main():
     largura, altura = tamanho_janela(0.65)
-    destino = URL_DEV if DEV else ARQUIVO_BUILD
 
     webview.create_window(
         'Chrono',
-        url=destino,
+        url=ARQUIVO_UI,
         js_api=api,
         width=largura,
         height=altura,

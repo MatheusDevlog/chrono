@@ -4,11 +4,6 @@
 __pycache__/
 *.pyc
 
-# ─── Node / React (a partir da Fase 2) ────────────
-node_modules/
-dist/
-build/
-
 # ─── Segredos / ambiente ──────────────────────────
 .env
 *.local
