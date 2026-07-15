@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chrono</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topo">
+      <span class="logo">CHRONO</span>
+      <span class="subtitulo">Seu vigia de foco</span>
+    </header>
+
+    <main class="painel">
+      <section class="cartao">
+        <div class="icone">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        </div>
+
+        <h1 class="titulo">Vigia ativo</h1>
+        <p class="descricao">
+          O Chrono está de olho nos seus apps de recompensa. Enquanto suas
+          tarefas não terminarem, ele vai te cobrar.
+        </p>
+
+        <button id="btn-concluir" class="botao-principal">Concluir tarefas</button>
+        <p id="status" class="rodape-status"></p>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

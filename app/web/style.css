@@ -1,0 +1,117 @@
+@font-face {
+  font-family: 'Press Start 2P';
+  src: url('fonts/PressStart2P-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Rubik';
+  src: url('fonts/Rubik-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Rubik';
+  src: url('fonts/Rubik-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-display: swap;
+}
+
+:root {
+  --fundo: #12302D;
+  --superficie: #193F3B;
+  --superficie-2: #21504B;
+  --borda: #2C625B;
+  --texto: #F2EEE6;
+  --texto-suave: #A6BAB5;
+  --marca: #2E7D74;
+  --primaria: #F39A1F;
+  --primaria-hover: #FFB03A;
+  --perigo: #C42E4C;
+  --info: #57C4E6;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--fundo);
+  color: var(--texto);
+  font-family: 'Rubik', 'Segoe UI', sans-serif;
+}
+
+.app { min-height: 100vh; display: flex; flex-direction: column; }
+
+.topo {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding: 20px 28px;
+  border-bottom: 1px solid var(--borda);
+  background: var(--superficie);
+}
+
+.logo {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 18px;
+  color: var(--primaria);
+  letter-spacing: 1px;
+}
+
+.subtitulo { color: var(--texto-suave); font-size: 14px; }
+
+.painel {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+}
+
+.cartao {
+  width: 100%;
+  max-width: 440px;
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: 16px;
+  padding: 40px 32px;
+  text-align: center;
+}
+
+.icone { color: var(--info); margin-bottom: 16px; }
+
+.titulo { font-size: 22px; margin: 0 0 12px; }
+
+.descricao {
+  color: var(--texto-suave);
+  font-size: 15px;
+  line-height: 1.5;
+  margin: 0 0 28px;
+}
+
+.botao-principal {
+  font-family: 'Rubik', sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 12px 28px;
+  border: none;
+  border-radius: 10px;
+  background: var(--primaria);
+  color: var(--fundo);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.botao-principal:hover { background: var(--primaria-hover); }
+.botao-principal:disabled {
+  background: var(--superficie-2);
+  color: var(--texto-suave);
+  cursor: default;
+}
+
+.rodape-status {
+  margin: 20px 0 0;
+  min-height: 20px;
+  font-size: 14px;
+  color: var(--info);
+}
