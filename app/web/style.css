@@ -64,8 +64,10 @@ body {
 .painel {
   flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
+  gap: 24px;
   padding: 32px;
 }
 
@@ -102,16 +104,76 @@ body {
   cursor: pointer;
   transition: background 0.15s ease;
 }
-.botao-principal:hover { background: var(--primaria-hover); }
-.botao-principal:disabled {
-  background: var(--superficie-2);
-  color: var(--texto-suave);
-  cursor: default;
-}
 
 .rodape-status {
   margin: 20px 0 0;
   min-height: 20px;
   font-size: 14px;
   color: var(--info);
+}
+
+.botoes { display: flex; gap: 12px; justify-content: center; }
+
+.botao-secundario {
+  font-family: 'Rubik', sans-serif;
+  font-size: 16px;
+  padding: 12px 24px;
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--texto);
+  cursor: pointer;
+}
+
+.botao-principal:hover { background: var(--primaria-hover); }
+.botao-secundario:hover { background: var(--superficie-2); }
+
+.botao-principal:disabled,
+.botao-secundario:disabled {
+  background: var(--superficie-2);
+  color: var(--texto-suave);
+  border-color: transparent;
+  cursor: default;
+}
+
+.historico {
+  width: 100%;
+  max-width: 440px;
+}
+
+.historico-titulo {
+  font-size: 16px;
+  color: var(--texto-suave);
+  margin: 0 0 12px;
+  font-weight: 500;
+}
+
+.lista-sessoes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.item-sessao {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 14px;
+}
+
+.item-sessao .quando { color: var(--texto-suave); }
+.item-sessao .duracao { color: var(--info); font-weight: 500; }
+
+.lista-vazia {
+  color: var(--texto-suave);
+  font-size: 14px;
+  text-align: center;
+  padding: 12px;
 }

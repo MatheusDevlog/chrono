@@ -18,3 +18,7 @@ Desktop.ini
 
 # ─── Material pessoal de estudo (não publicar) ────
 GUIA/
+
+# ─── Dados locais do app (histórico) ──────────────
+*.db
+app/dados/

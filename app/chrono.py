@@ -1,8 +1,11 @@
 import os
 import time
 import threading
+import datetime
 import psutil
 import webview
+
+import banco
 
 APP_ALVO = 'notepad.exe'
 INTERVALO = 5
@@ -13,17 +16,35 @@ ARQUIVO_COBRANCA = os.path.join(PASTA_APP,'web', 'cobranca.html')
 
 tarefas_concluidas = False
 janela_cobranca = None
+foco_inicio = None
 
 class API:
+    def iniciar_foco(self):
+        global foco_inicio, tarefas_concluidas
+        foco_inicio = datetime.datetime.now()
+        tarefas_concluidas = False
+        print(f'[Chrono] Foco iniciado às {foco_inicio.strftime("%H:%M:%S")}.')
+
     def concluir_tarefas(self):
-        global tarefas_concluidas
+        global tarefas_concluidas, foco_inicio
         tarefas_concluidas = True
+
+        if foco_inicio is not None:
+            fim = datetime.datetime.now()
+            duracao = int((fim - foco_inicio).total_seconds())
+            banco.salvar_sessao(foco_inicio.isoformat(), fim.isoformat(), duracao)
+            print(f'[Chrono] Sessão de foco salva: {duracao}s.')
+            foco_inicio = None
+
         print('[Chrono] Tarefas concluídas! Parei de cobrar.')
         fechar_cobranca()
 
     def ignorar(self):
         print('[Chrono] Ignorado. Cobro de novo se o app continuar aberto.')
         fechar_cobranca()
+
+    def listar_sessoes(self):
+        return banco.listar_sessoes(10)
 
 api = API()
 
@@ -79,6 +100,8 @@ def tamanho_janela(proporcao=0.65):
 
 
 def main():
+    banco.criar_tabela()
+
     largura, altura = tamanho_janela(0.65)
 
     webview.create_window(
