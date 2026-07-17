@@ -26,12 +26,22 @@
 
         <h1 class="titulo">Vigia ativo</h1>
         <p class="descricao">
-          O Chrono está de olho nos seus apps de recompensa. Enquanto suas
-          tarefas não terminarem, ele vai te cobrar.
+          Inicie uma sessão de foco. Enquanto ela durar, o Chrono cobra se
+          você abrir um app de recompensa. Ao concluir, a sessão vai pro
+          seu histórico.
         </p>
 
-        <button id="btn-concluir" class="botao-principal">Concluir tarefas</button>
+        <div class="botoes">
+          <button id="btn-iniciar" class="botao-principal">Iniciar foco</button>
+          <button id="btn-concluir" class="botao-secundario" disabled>Concluir tarefas</button>
+        </div>
+
         <p id="status" class="rodape-status"></p>
+      </section>
+
+      <section class="historico">
+        <h2 class="historico-titulo">Sessões de foco</h2>
+        <ul id="lista-sessoes" class="lista-sessoes"></ul>
       </section>
     </main>
   </div>
