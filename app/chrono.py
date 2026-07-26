@@ -6,6 +6,7 @@ import psutil
 import webview
 
 import banco
+import bandeja
 
 APP_ALVO = 'notepad.exe'
 INTERVALO = 5
@@ -17,6 +18,9 @@ ARQUIVO_COBRANCA = os.path.join(PASTA_APP,'web', 'cobranca.html')
 tarefas_concluidas = False
 janela_cobranca = None
 foco_inicio = None
+
+janela_principal = None
+saindo = False
 
 class API:
     def iniciar_foco(self):
@@ -92,6 +96,29 @@ def vigiar():
             mostrar_cobranca()
 
 
+def ao_fechar_janela():
+    if saindo:
+        return True
+    janela_principal.hide()
+    print('[Chrono] Minimizando para a bandeja. Continuo vigiando.')
+    return False
+
+
+def abrir_janela(icon, item):
+    janela_principal.show()
+
+
+def sair(icon, item):
+    global saindo
+    saindo = True
+    icon.stop()
+    janela_principal.destroy()
+
+
+def iniciar_bandeja():
+    bandeja.iniciar(abrir_janela, sair)
+
+
 def tamanho_janela(proporcao=0.65):
     tela = webview.screens[0]
     largura = int(tela.width * proporcao)
@@ -100,11 +127,12 @@ def tamanho_janela(proporcao=0.65):
 
 
 def main():
+    global janela_principal
     banco.criar_tabela()
 
     largura, altura = tamanho_janela(0.65)
 
-    webview.create_window(
+    janela_principal = webview.create_window(
         'Chrono',
         url=ARQUIVO_UI,
         js_api=api,
@@ -113,7 +141,11 @@ def main():
         resizable=True,
         min_size=(900, 600),
     )
+    janela_principal.events.closing += ao_fechar_janela
+
     threading.Thread(target=vigiar, daemon=True).start()
+    threading.Thread(target=iniciar_bandeja, daemon=True).start()
+
     webview.start()
 
 
