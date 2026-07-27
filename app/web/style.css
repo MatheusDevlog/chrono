@@ -287,7 +287,39 @@ body {
 
 .btn-remover:hover { background: rgba(196, 46, 76, 0.18); color: var(--perigo); }
 
-#btn-novo-bloco { margin: 0 40px; }
+#btn-novo-bloco,
+#btn-novo-app { margin: 0 40px; }
+
+.lista-apps {
+  list-style: none;
+  margin: 0;
+  padding: 20px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 640px;
+}
+
+.item-app {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: 12px;
+  padding: 14px 18px;
+}
+
+.app-info { display: flex; align-items: center; gap: 12px; }
+.app-nome { font-size: 15px; font-weight: 500; }
+.app-processo {
+  font-family: monospace;
+  font-size: 13px;
+  background: var(--superficie-2);
+  color: var(--info);
+  padding: 3px 8px;
+  border-radius: 6px;
+}
 
 .form-bloco {
   margin: 20px 40px;

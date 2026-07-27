@@ -67,6 +67,15 @@ class API:
     def remover_bloco(self, id_bloco):
         agenda.remover_bloco(id_bloco)
 
+    def listar_apps(self):
+        return apps.listar_apps()
+
+    def salvar_app(self, nome, processo):
+        apps.salvar_app(nome, processo)
+
+    def remover_app(self, id_app):
+        apps.remover_app(id_app)
+
 api = API()
 
 def app_aberto(nome_processo):

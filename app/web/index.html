@@ -112,8 +112,32 @@
       <section class="view" id="view-apps">
         <header class="view-topo">
           <h1 class="view-titulo">Apps vigiados</h1>
-          <p class="view-descricao">Em breve.</p>
+          <p class="view-descricao">
+            Cadastre os aplicativos ou jogos que tiram o seu foco. Em blocos de
+            <strong>foco</strong>, o Chrono te cobra se qualquer um deles estiver aberto.
+          </p>
         </header>
+
+        <ul class="lista-apps" id="lista-apps"></ul>
+
+        <button class="botao-principal" id="btn-novo-app">+ adicionar app</button>
+
+        <form class="form-bloco escondido" id="form-app">
+          <label class="campo">
+            <span>Nome do App</span>
+            <input type="text" id="app-nome" placeholder="Ex.: Steam, Valorant, Navegador" required>
+          </label>
+
+          <label class="campo">
+            <span>Nome do Processo (.exe)</span>
+            <input type="text" id="app-processo" placeholder="Ex.: steam.exe, valorant.exe, chrome.exe" required>
+          </label>
+
+          <div class="form-acoes">
+            <button type="submit" class="botao-principal">Salvar app</button>
+            <button type="button" class="botao-secundario" id="btn-cancelar-app">Cancelar</button>
+          </div>
+        </form>
       </section>
     </main>
   </div>

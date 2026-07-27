@@ -14,6 +14,7 @@ navItens.forEach((item) => {
     navItens.forEach((n) => n.classList.toggle('ativo', n === item))
     views.forEach((v) => v.classList.toggle('ativa', v.id === `view-${alvo}`))
     if (alvo === 'agenda') carregarBlocos()
+    if (alvo === 'apps') carregarApps()
   })
 })
 
@@ -186,6 +187,71 @@ formBloco.addEventListener('submit', async (evento) => {
   await window.pywebview.api.salvar_bloco(diaSelecionado, inicio, fim, atividade, modo, pausa)
   fecharForm()
   carregarBlocos()
+})
+
+const listaApps = document.getElementById('lista-apps')
+const btnNovoApp = document.getElementById('btn-novo-app')
+const formApp = document.getElementById('form-app')
+const btnCancelarApp = document.getElementById('btn-cancelar-app')
+
+function formatarApp(app) {
+  return `
+    <li class="item-app">
+      <span class="app-info">
+        <span class="app-nome">${app.nome}</span>
+        <span class="app-processo">${app.processo}</span>
+      </span>
+      <button class="btn-remover" data-id="${app.id}" title="Remover">×</button>
+    </li>`
+}
+
+async function carregarApps() {
+  if (!window.pywebview) {
+    listaApps.innerHTML = '<li class="lista-vazia">Abra dentro do Chrono para ver os apps vigiados.</li>'
+    return
+  }
+
+  const apps = await window.pywebview.api.listar_apps()
+
+  if (apps.length === 0) {
+    listaApps.innerHTML = '<li class="lista-vazia">Nenhum app cadastrado. Adicione o primeiro!</li>'
+    return
+  }
+
+  listaApps.innerHTML = apps.map(formatarApp).join('')
+
+  listaApps.querySelectorAll('.btn-remover').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      await window.pywebview.api.remover_app(Number(btn.dataset.id))
+      carregarApps()
+    })
+  })
+}
+
+function abrirFormApp() {
+  formApp.classList.remove('escondido')
+  btnNovoApp.classList.add('escondido')
+}
+
+function fecharFormApp() {
+  formApp.reset()
+  formApp.classList.add('escondido')
+  btnNovoApp.classList.remove('escondido')
+}
+
+btnNovoApp.addEventListener('click', abrirFormApp)
+btnCancelarApp.addEventListener('click', fecharFormApp)
+
+formApp.addEventListener('submit', async (evento) => {
+  evento.preventDefault()
+  if (!window.pywebview) return
+
+  const nome = document.getElementById('app-nome').value.trim()
+  const processo = document.getElementById('app-processo').value.trim()
+
+  await window.pywebview.api.salvar_app(nome, processo)
+  fecharFormApp()
+  carregarApps()
 })
 
 montarAbas()
