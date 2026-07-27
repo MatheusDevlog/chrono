@@ -7,6 +7,9 @@ NOME_APP = 'Chrono'
 CHAVE_RUN = r'Software\Microsoft\Windows\CurrentVersion\Run'
 
 def _comando():
+    if getattr(sys, 'frozen', False):
+        return f'"{sys.executable}"'
+
     pasta_python = os.path.dirname(sys.executable)
     pythonw = os.path.join(pasta_python, 'pythonw.exe')
     script = os.path.abspath(os.path.join(os.path.dirname(__file__), 'chrono.py'))
