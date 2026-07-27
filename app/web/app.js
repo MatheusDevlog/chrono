@@ -1,3 +1,23 @@
+const DIAS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
+const MODOS = {
+  foco: { rotulo: 'Foco', classe: 'tag-foco' },
+  pausa: { rotulo: 'Pausa', classe: 'tag-pausa' },
+  livre: { rotulo: 'Livre', classe: 'tag-livre' },
+}
+
+const navItens = document.querySelectorAll('.nav-item')
+const views = document.querySelectorAll('.view')
+
+navItens.forEach((item) => {
+  item.addEventListener('click', () => {
+    const alvo = item.dataset.view
+    navItens.forEach((n) => n.classList.toggle('ativo', n === item))
+    views.forEach((v) => v.classList.toggle('ativa', v.id === `view-${alvo}`))
+    if (alvo === 'agenda') carregarBlocos()
+    if (alvo === 'apps') carregarApps()
+  })
+})
+
 const btnIniciar = document.getElementById('btn-iniciar')
 const btnConcluir = document.getElementById('btn-concluir')
 const status = document.getElementById('status')
@@ -61,6 +81,180 @@ async function carregarHistorico() {
     </li>
   `).join('')
 }
+
+const diasAbas = document.getElementById('dias-abas')
+const listaBlocos = document.getElementById('lista-blocos')
+const btnNovoBloco = document.getElementById('btn-novo-bloco')
+const formBloco = document.getElementById('form-bloco')
+const btnCancelarBloco = document.getElementById('btn-cancelar-bloco')
+const seletorModo = document.getElementById('bloco-modo')
+const campoPausa = document.getElementById('campo-pausa')
+const blocoErro = document.getElementById('bloco-erro')
+
+let diaSelecionado = (new Date().getDay() + 6) % 7
+
+function montarAbas() {
+  diasAbas.innerHTML = DIAS.map((nome, i) =>
+    `<button class="dia-aba ${i === diaSelecionado ? 'ativo' : ''}" data-dia="${i}">${nome}</button>`
+  ).join('')
+
+  diasAbas.querySelectorAll('.dia-aba').forEach((aba) => {
+    aba.addEventListener('click', () => {
+      diaSelecionado = Number(aba.dataset.dia)
+      montarAbas()
+      carregarBlocos()
+    })
+  })
+}
+
+function formatarBloco(bloco) {
+  const modo = MODOS[bloco.modo] || MODOS.livre
+  const detalhe = bloco.modo === 'foco' && bloco.pausa_intervalo_min
+    ? `<span class="bloco-detalhe">Esticar a cada ${bloco.pausa_intervalo_min} min</span>`
+    : ''
+
+  return `
+    <li class="item-bloco">
+      <span class="bloco-horario">${bloco.hora_inicio}–${bloco.hora_fim}</span>
+      <span class="bloco-info">
+        <span class="bloco-atividade">${bloco.atividade}</span>
+        ${detalhe}
+      </span>
+      <span class="bloco-tag ${modo.classe}">${modo.rotulo}</span>
+      <button class="btn-remover" data-id="${bloco.id}" title="Remover">×</button>
+    </li>`
+}
+
+async function carregarBlocos() {
+  if (!window.pywebview) {
+    listaBlocos.innerHTML = '<li class="lista-vazia">Abra dentro do Chrono para ver a agenda.</li>'
+    return
+  }
+
+  const blocos = await window.pywebview.api.listar_blocos(diaSelecionado)
+
+  if (blocos.length === 0) {
+    listaBlocos.innerHTML = '<li class="lista-vazia">Nenhum bloco neste dia. Adicione o primeiro!</li>'
+    return
+  }
+
+  listaBlocos.innerHTML = blocos.map(formatarBloco).join('')
+
+  listaBlocos.querySelectorAll('.btn-remover').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      await window.pywebview.api.remover_bloco(Number(btn.dataset.id))
+      carregarBlocos()
+    })
+  })
+}
+
+function abrirForm() {
+  formBloco.classList.remove('escondido')
+  btnNovoBloco.classList.add('escondido')
+}
+
+function fecharForm() {
+  formBloco.reset()
+  blocoErro.classList.add('escondido')
+  campoPausa.classList.remove('escondido')
+  formBloco.classList.add('escondido')
+  btnNovoBloco.classList.remove('escondido')
+}
+
+seletorModo.addEventListener('change', () => {
+  campoPausa.classList.toggle('escondido', seletorModo.value !== 'foco')
+})
+
+btnNovoBloco.addEventListener('click', abrirForm)
+btnCancelarBloco.addEventListener('click', fecharForm)
+
+formBloco.addEventListener('submit', async (evento) => {
+  evento.preventDefault()
+  if (!window.pywebview) return
+
+  const inicio = document.getElementById('bloco-inicio').value
+  const fim = document.getElementById('bloco-fim').value
+  const atividade = document.getElementById('bloco-atividade').value.trim()
+  const modo = seletorModo.value
+  const pausaTexto = document.getElementById('bloco-pausa').value
+  const pausa = modo === 'foco' && pausaTexto ? Number(pausaTexto) : null
+
+  if (fim <= inicio) {
+    blocoErro.classList.remove('escondido')
+    return
+  }
+
+  await window.pywebview.api.salvar_bloco(diaSelecionado, inicio, fim, atividade, modo, pausa)
+  fecharForm()
+  carregarBlocos()
+})
+
+const listaApps = document.getElementById('lista-apps')
+const btnNovoApp = document.getElementById('btn-novo-app')
+const formApp = document.getElementById('form-app')
+const btnCancelarApp = document.getElementById('btn-cancelar-app')
+
+function formatarApp(app) {
+  return `
+    <li class="item-app">
+      <span class="app-info">
+        <span class="app-nome">${app.nome}</span>
+        <span class="app-processo">${app.processo}</span>
+      </span>
+      <button class="btn-remover" data-id="${app.id}" title="Remover">×</button>
+    </li>`
+}
+
+async function carregarApps() {
+  if (!window.pywebview) {
+    listaApps.innerHTML = '<li class="lista-vazia">Abra dentro do Chrono para ver os apps vigiados.</li>'
+    return
+  }
+
+  const apps = await window.pywebview.api.listar_apps()
+
+  if (apps.length === 0) {
+    listaApps.innerHTML = '<li class="lista-vazia">Nenhum app cadastrado. Adicione o primeiro!</li>'
+    return
+  }
+
+  listaApps.innerHTML = apps.map(formatarApp).join('')
+
+  listaApps.querySelectorAll('.btn-remover').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      await window.pywebview.api.remover_app(Number(btn.dataset.id))
+      carregarApps()
+    })
+  })
+}
+
+function abrirFormApp() {
+  formApp.classList.remove('escondido')
+  btnNovoApp.classList.add('escondido')
+}
+
+function fecharFormApp() {
+  formApp.reset()
+  formApp.classList.add('escondido')
+  btnNovoApp.classList.remove('escondido')
+}
+
+btnNovoApp.addEventListener('click', abrirFormApp)
+btnCancelarApp.addEventListener('click', fecharFormApp)
+
+formApp.addEventListener('submit', async (evento) => {
+  evento.preventDefault()
+  if (!window.pywebview) return
+
+  const nome = document.getElementById('app-nome').value.trim()
+  const processo = document.getElementById('app-processo').value.trim()
+
+  await window.pywebview.api.salvar_app(nome, processo)
+  fecharFormApp()
+  carregarApps()
+})
+
+montarAbas()
 
 if (window.pywebview) {
   carregarHistorico()

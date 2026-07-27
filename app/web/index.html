@@ -8,40 +8,136 @@
 </head>
 <body>
   <div class="app">
-    <header class="topo">
+    <aside class="sidebar">
       <span class="logo">CHRONO</span>
-      <span class="subtitulo">Seu vigia de foco</span>
-    </header>
+      <nav class="nav">
+        <button class="nav-item ativo" data-view="inicio">Início</button>
+        <button class="nav-item" data-view="agenda">Agenda</button>
+        <button class="nav-item" data-view="apps">Apps vigiados</button>
+      </nav>
+    </aside>
 
-    <main class="painel">
-      <section class="cartao">
-        <div class="icone">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2"
-               stroke-linecap="round" stroke-linejoin="round">
-            <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
-            <circle cx="12" cy="12" r="3"/>
-          </svg>
+    <main class="conteudo">
+      <section class="view ativa" id="view-inicio">
+        <div class="painel">
+          <section class="cartao">
+            <div class="icone">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </div>
+
+            <h1 class="titulo">Vigia ativo</h1>
+            <p class="descricao">
+              Inicie uma sessão de foco. Enquanto ela durar, o Chrono cobra se
+              você abrir um app de recompensa. Ao concluir, a sessão vai pro
+              seu histórico.
+            </p>
+
+            <div class="botoes">
+              <button id="btn-iniciar" class="botao-principal">Iniciar foco</button>
+              <button id="btn-concluir" class="botao-secundario" disabled>Concluir tarefas</button>
+            </div>
+
+            <p id="status" class="rodape-status"></p>
+          </section>
+
+          <section class="historico">
+            <h2 class="historico-titulo">Sessões de foco</h2>
+            <ul id="lista-sessoes" class="lista-sessoes"></ul>
+          </section>
         </div>
-
-        <h1 class="titulo">Vigia ativo</h1>
-        <p class="descricao">
-          Inicie uma sessão de foco. Enquanto ela durar, o Chrono cobra se
-          você abrir um app de recompensa. Ao concluir, a sessão vai pro
-          seu histórico.
-        </p>
-
-        <div class="botoes">
-          <button id="btn-iniciar" class="botao-principal">Iniciar foco</button>
-          <button id="btn-concluir" class="botao-secundario" disabled>Concluir tarefas</button>
-        </div>
-
-        <p id="status" class="rodape-status"></p>
       </section>
 
-      <section class="historico">
-        <h2 class="historico-titulo">Sessões de foco</h2>
-        <ul id="lista-sessoes" class="lista-sessoes"></ul>
+      <section class="view" id="view-agenda">
+        <header class="view-topo">
+          <h1 class="view-titulo">Agenda</h1>
+          <p class="view-descricao">
+            Monte sua semana. Em blocos de <strong>foco</strong> o Chrono cobra se
+            você abrir um app vigiado; em <strong>pausa</strong> ele te lembra de
+            levantar; em <strong>livre</strong> ele fica quieto.
+          </p>
+        </header>
+
+        <div class="dias-abas" id="dias-abas"></div>
+
+        <ul class="lista-blocos" id="lista-blocos"></ul>
+
+        <button class="botao-principal" id="btn-novo-bloco">+ adicionar bloco</button>
+
+        <form class="form-bloco escondido" id="form-bloco">
+          <div class="campo-linha">
+            <label class="campo">
+              <span>Início</span>
+              <input type="time" id="bloco-inicio" required>
+            </label>
+            <label class="campo">
+              <span>Fim</span>
+              <input type="time" id="bloco-fim" required>
+            </label>
+          </div>
+
+          <label class="campo">
+            <span>Atividade</span>
+            <input type="text" id="bloco-atividade" placeholder="Ex.: Trabalho, Inglês, Almoço" required>
+          </label>
+
+          <div class="campo-linha">
+            <label class="campo">
+              <span>Modo</span>
+              <select id="bloco-modo">
+                <option value="foco">Foco (vigia e cobra)</option>
+                <option value="pausa">Pausa (levanta, estica)</option>
+                <option value="livre">Livre (não incomoda)</option>
+              </select>
+            </label>
+            <label class="campo" id="campo-pausa">
+              <span>Esticar a cada (min)</span>
+              <input type="number" id="bloco-pausa" min="0" step="5" placeholder="opcional">
+            </label>
+          </div>
+
+          <p class="form-erro escondido" id="bloco-erro">O horário de fim precisa ser depois do início.</p>
+
+          <div class="form-acoes">
+            <button type="submit" class="botao-principal">Salvar bloco</button>
+            <button type="button" class="botao-secundario" id="btn-cancelar-bloco">Cancelar</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="view" id="view-apps">
+        <header class="view-topo">
+          <h1 class="view-titulo">Apps vigiados</h1>
+          <p class="view-descricao">
+            Cadastre os aplicativos ou jogos que tiram o seu foco. Em blocos de
+            <strong>foco</strong>, o Chrono te cobra se qualquer um deles estiver aberto.
+          </p>
+        </header>
+
+        <ul class="lista-apps" id="lista-apps"></ul>
+
+        <button class="botao-principal" id="btn-novo-app">+ adicionar app</button>
+
+        <form class="form-bloco escondido" id="form-app">
+          <label class="campo">
+            <span>Nome do App</span>
+            <input type="text" id="app-nome" placeholder="Ex.: Steam, Valorant, Navegador" required>
+          </label>
+
+          <label class="campo">
+            <span>Nome do Processo (.exe)</span>
+            <input type="text" id="app-processo" placeholder="Ex.: steam.exe, valorant.exe, chrome.exe" required>
+          </label>
+
+          <div class="form-acoes">
+            <button type="submit" class="botao-principal">Salvar app</button>
+            <button type="button" class="botao-secundario" id="btn-cancelar-app">Cancelar</button>
+          </div>
+        </form>
       </section>
     </main>
   </div>

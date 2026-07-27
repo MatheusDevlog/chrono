@@ -41,32 +41,65 @@ body {
   font-family: 'Rubik', 'Segoe UI', sans-serif;
 }
 
-.app { min-height: 100vh; display: flex; flex-direction: column; }
+.app { min-height: 100vh; display: flex; }
 
-.topo {
-  display: flex;
-  align-items: baseline;
-  gap: 16px;
-  padding: 20px 28px;
-  border-bottom: 1px solid var(--borda);
+.sidebar {
+  width: 200px;
+  flex-shrink: 0;
   background: var(--superficie);
+  border-right: 1px solid var(--borda);
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
 }
 
 .logo {
   font-family: 'Press Start 2P', monospace;
-  font-size: 18px;
+  font-size: 16px;
   color: var(--primaria);
   letter-spacing: 1px;
+  padding: 0 8px;
 }
 
-.subtitulo { color: var(--texto-suave); font-size: 14px; }
+.nav { display: flex; flex-direction: column; gap: 4px; }
+
+.nav-item {
+  font-family: 'Rubik', sans-serif;
+  font-size: 15px;
+  text-align: left;
+  padding: 12px 14px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--texto-suave);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.nav-item:hover { background: var(--superficie-2); color: var(--texto); }
+
+.nav-item.ativo { background: var(--superficie-2); color: var(--primaria); }
+
+.conteudo { flex: 1; overflow-y: auto; }
+
+.view { display: none; }
+.view.ativa { display: block; }
+
+.view-topo { padding: 32px 40px 8px; }
+.view-titulo { font-size: 24px; margin: 0 0 8px; }
+.view-descricao {
+  color: var(--texto-suave);
+  font-size: 15px;
+  line-height: 1.5;
+  margin: 0;
+  max-width: 620px;
+}
 
 .painel {
-  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
   gap: 24px;
   padding: 32px;
 }
@@ -82,7 +115,6 @@ body {
 }
 
 .icone { color: var(--info); margin-bottom: 16px; }
-
 .titulo { font-size: 22px; margin: 0 0 12px; }
 
 .descricao {
@@ -91,6 +123,8 @@ body {
   line-height: 1.5;
   margin: 0 0 28px;
 }
+
+.botoes { display: flex; gap: 12px; justify-content: center; }
 
 .botao-principal {
   font-family: 'Rubik', sans-serif;
@@ -104,15 +138,6 @@ body {
   cursor: pointer;
   transition: background 0.15s ease;
 }
-
-.rodape-status {
-  margin: 20px 0 0;
-  min-height: 20px;
-  font-size: 14px;
-  color: var(--info);
-}
-
-.botoes { display: flex; gap: 12px; justify-content: center; }
 
 .botao-secundario {
   font-family: 'Rubik', sans-serif;
@@ -136,10 +161,14 @@ body {
   cursor: default;
 }
 
-.historico {
-  width: 100%;
-  max-width: 440px;
+.rodape-status {
+  margin: 20px 0 0;
+  min-height: 20px;
+  font-size: 14px;
+  color: var(--info);
 }
+
+.historico { width: 100%; max-width: 440px; }
 
 .historico-titulo {
   font-size: 16px;
@@ -177,3 +206,161 @@ body {
   text-align: center;
   padding: 12px;
 }
+
+.dias-abas {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 20px 40px 0;
+}
+
+.dia-aba {
+  font-family: 'Rubik', sans-serif;
+  font-size: 14px;
+  padding: 8px 14px;
+  border: 1px solid var(--borda);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--texto-suave);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.dia-aba:hover { background: var(--superficie-2); color: var(--texto); }
+.dia-aba.ativo { background: var(--primaria); color: var(--fundo); border-color: transparent; }
+
+.lista-blocos {
+  list-style: none;
+  margin: 0;
+  padding: 20px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 700px;
+}
+
+.item-bloco {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: 12px;
+  padding: 14px 18px;
+}
+
+.bloco-horario {
+  font-family: 'Rubik', sans-serif;
+  font-weight: 500;
+  color: var(--texto);
+  white-space: nowrap;
+}
+
+.bloco-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.bloco-atividade { font-size: 15px; }
+.bloco-detalhe { font-size: 13px; color: var(--texto-suave); }
+
+.bloco-tag {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tag-foco { background: rgba(243, 154, 31, 0.18); color: var(--primaria); }
+.tag-pausa { background: rgba(87, 196, 230, 0.18); color: var(--info); }
+.tag-livre { background: var(--superficie-2); color: var(--texto-suave); }
+
+.btn-remover {
+  border: none;
+  background: transparent;
+  color: var(--texto-suave);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.btn-remover:hover { background: rgba(196, 46, 76, 0.18); color: var(--perigo); }
+
+#btn-novo-bloco,
+#btn-novo-app { margin: 0 40px; }
+
+.lista-apps {
+  list-style: none;
+  margin: 0;
+  padding: 20px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 640px;
+}
+
+.item-app {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: 12px;
+  padding: 14px 18px;
+}
+
+.app-info { display: flex; align-items: center; gap: 12px; }
+.app-nome { font-size: 15px; font-weight: 500; }
+.app-processo {
+  font-family: monospace;
+  font-size: 13px;
+  background: var(--superficie-2);
+  color: var(--info);
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.form-bloco {
+  margin: 20px 40px;
+  max-width: 640px;
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: 14px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.campo-linha { display: flex; gap: 16px; flex-wrap: wrap; }
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 160px;
+}
+
+.campo > span { font-size: 13px; color: var(--texto-suave); }
+
+.campo input,
+.campo select {
+  font-family: 'Rubik', sans-serif;
+  font-size: 15px;
+  padding: 10px 12px;
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  background: var(--fundo);
+  color: var(--texto);
+}
+
+.campo input:focus,
+.campo select:focus { outline: none; border-color: var(--primaria); }
+
+.form-acoes { display: flex; gap: 12px; }
+
+.form-erro { color: var(--perigo); font-size: 13px; margin: 0; }
+
+.escondido { display: none; }
