@@ -6,6 +6,8 @@ import datetime
 import psutil
 import webview
 
+import agenda
+import apps
 import banco
 import bandeja
 
@@ -55,6 +57,15 @@ class API:
 
     def listar_sessoes(self):
         return banco.listar_sessoes(10)
+
+    def listar_blocos(self, dia_semana):
+        return agenda.listar_blocos(dia_semana)
+
+    def salvar_bloco(self, dia_semana, hora_inicio, hora_fim, atividade, modo, pausa_intervalo_min):
+        agenda.salvar_bloco(dia_semana, hora_inicio, hora_fim, atividade, modo, pausa_intervalo_min)
+
+    def remover_bloco(self, id_bloco):
+        agenda.remover_bloco(id_bloco)
 
 api = API()
 
@@ -135,6 +146,8 @@ def tamanho_janela(proporcao=0.65):
 def main():
     global janela_principal
     banco.criar_tabela()
+    agenda.criar_tabela()
+    apps.criar_tabela()
 
     largura, altura = tamanho_janela(0.65)
 
