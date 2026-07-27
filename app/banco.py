@@ -1,8 +1,13 @@
 import os
 import sqlite3
 
-PASTA_APP = os.path.dirname(os.path.abspath(__file__))
-PASTA_DADOS = os.path.join(PASTA_APP, 'dados')
+
+def _pasta_dados():
+    base = os.environ.get('APPDATA') or os.path.expanduser('~')
+    return os.path.join(base, 'Chrono')
+
+
+PASTA_DADOS = _pasta_dados()
 ARQUIVO_BANCO = os.path.join(PASTA_DADOS, 'chrono.db')
 
 

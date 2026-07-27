@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 import threading
 import datetime
@@ -11,9 +12,14 @@ import bandeja
 APP_ALVO = 'notepad.exe'
 INTERVALO = 5
 
-PASTA_APP = os.path.dirname(os.path.abspath(__file__))
-ARQUIVO_UI = os.path.join(PASTA_APP, 'web', 'index.html')
-ARQUIVO_COBRANCA = os.path.join(PASTA_APP,'web', 'cobranca.html')
+
+def caminho_recurso(relativo):
+    base = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base, relativo)
+
+
+ARQUIVO_UI = caminho_recurso(os.path.join('web', 'index.html'))
+ARQUIVO_COBRANCA = caminho_recurso(os.path.join('web', 'cobranca.html'))
 
 tarefas_concluidas = False
 janela_cobranca = None

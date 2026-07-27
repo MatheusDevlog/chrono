@@ -22,3 +22,9 @@ GUIA/
 # ─── Dados locais do app (histórico) ──────────────
 *.db
 app/dados/
+
+# ─── Empacotamento (PyInstaller / Inno Setup) ─────
+build/
+dist/
+Output/
+*.spec
