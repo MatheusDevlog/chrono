@@ -11,7 +11,6 @@ import apps
 import banco
 import bandeja
 
-APP_ALVO = 'notepad.exe'
 INTERVALO = 5
 
 
@@ -60,6 +59,9 @@ class API:
 
     def listar_blocos(self, dia_semana):
         return agenda.listar_blocos(dia_semana)
+
+    def obter_bloco_atual(self):
+        return agenda.obter_bloco_atual()
 
     def salvar_bloco(self, dia_semana, hora_inicio, hora_fim, atividade, modo, pausa_intervalo_min):
         agenda.salvar_bloco(dia_semana, hora_inicio, hora_fim, atividade, modo, pausa_intervalo_min)
@@ -142,16 +144,26 @@ def fechar_cobranca():
 
 
 def vigiar():
-    print(f'[Chrono] Vigia ligado. De olho em "{APP_ALVO}" a cada {INTERVALO}s.')
+    print(f'[Chrono] Vigia ligado. Verificando agenda e apps a cada {INTERVALO}s.')
     while True:
         time.sleep(INTERVALO)
 
-        if tarefas_concluidas:
+        bloco = agenda.obter_bloco_atual()
+        if bloco is None or bloco['modo'] != 'foco':
+            if cobranca_aberta():
+                fechar_cobranca()
             continue
-        
-        if app_aberto(APP_ALVO) and not cobranca_aberta():
-            print(f'[Chrono] "{APP_ALVO}" aberto e tarefas pendentes -> cobrando!')
-            mostrar_cobranca()
+
+        apps_bloqueados = apps.listar_apps()
+        if not apps_bloqueados:
+            continue
+
+        for app_vigiado in apps_bloqueados:
+            if app_aberto(app_vigiado['processo']):
+                if not cobranca_aberta():
+                    print(f'[Chrono] App proibido "{app_vigiado["nome"]}" aberto durante foco -> cobrando!')
+                    mostrar_cobranca()
+                break
 
 
 def ao_fechar_janela():
