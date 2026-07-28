@@ -42,3 +42,12 @@ def remover_app(id_app):
     conexao.execute("DELETE FROM apps_bloqueados WHERE id = ?", (id_app,))
     conexao.commit()
     conexao.close()
+
+def editar_app(id_app, nome, processo):
+    conexao = conectar()
+    conexao.execute(
+        "UPDATE apps_bloqueados SET nome=?, processo=? WHERE id=?",
+        (nome, processo, id_app),
+    )
+    conexao.commit()
+    conexao.close()

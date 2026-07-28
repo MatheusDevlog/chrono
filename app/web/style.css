@@ -273,18 +273,27 @@ body {
 .tag-pausa { background: rgba(87, 196, 230, 0.18); color: var(--info); }
 .tag-livre { background: var(--superficie-2); color: var(--texto-suave); }
 
+.acoes {
+  display: flex;
+  gap: 4px;
+}
+
+.btn-editar,
 .btn-remover {
   border: none;
   background: transparent;
   color: var(--texto-suave);
-  font-size: 20px;
   line-height: 1;
   cursor: pointer;
-  padding: 4px 8px;
+  padding: 6px 8px;
   border-radius: 8px;
   transition: background 0.15s ease, color 0.15s ease;
 }
 
+.btn-editar { font-size: 16px; }
+.btn-remover { font-size: 20px; }
+
+.btn-editar:hover { background: var(--superficie-2); color: var(--texto); }
 .btn-remover:hover { background: rgba(196, 46, 76, 0.18); color: var(--perigo); }
 
 #btn-novo-bloco,

@@ -58,3 +58,14 @@ def remover_bloco(id_bloco):
     conexao.execute("DELETE FROM blocos_rotina WHERE id = ?", (id_bloco,))
     conexao.commit()
     conexao.close()
+
+def editar_bloco(id_bloco, dia_semana, hora_inicio, hora_fim, atividade, modo, pausa_intervalo_min=None):
+    conexao = conectar()
+    conexao.execute(
+        "UPDATE blocos_rotina "
+        "SET dia_semana=?, hora_inicio=?, hora_fim=?, atividade=?, modo=?, pausa_intervalo_min=? "
+        "WHERE id=?",
+        (dia_semana, hora_inicio, hora_fim, atividade, modo, pausa_intervalo_min, id_bloco),
+    )
+    conexao.commit()
+    conexao.close()

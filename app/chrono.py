@@ -67,6 +67,9 @@ class API:
     def remover_bloco(self, id_bloco):
         agenda.remover_bloco(id_bloco)
 
+    def editar_bloco(self, id_bloco, dia_semana, hora_inicio, hora_fim, atividade, modo, pausa_intervalo_min):
+        agenda.editar_bloco(id_bloco, dia_semana, hora_inicio, hora_fim, atividade, modo, pausa_intervalo_min)
+
     def listar_apps(self):
         return apps.listar_apps()
 
@@ -75,6 +78,35 @@ class API:
 
     def remover_app(self, id_app):
         apps.remover_app(id_app)
+
+    def editar_app(self, id_app, nome, processo):
+        apps.editar_app(id_app, nome, processo)
+
+    def listar_processos_abertos(self):
+        import win32gui
+        import win32process
+        
+        processos_com_janela = set()
+        
+        def callback_janela(hwnd, _):
+            if win32gui.IsWindowVisible(hwnd) and win32gui.GetWindowText(hwnd):
+                _, pid = win32process.GetWindowThreadProcessId(hwnd)
+                try:
+                    p = psutil.Process(pid)
+                    nome = p.name()
+                    ignorados = {
+                        'explorer.exe', 'applicationframehost.exe', 
+                        'systemsettings.exe', 'textinputhost.exe',
+                        'searchapp.exe', 'searchindexer.exe'
+                    }
+                    if nome and nome.lower() not in ignorados:
+                        processos_com_janela.add(nome)
+                except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                    pass
+        
+        win32gui.EnumWindows(callback_janela, None)
+        
+        return sorted(list(processos_com_janela), key=lambda s: s.lower())
 
 api = API()
 
