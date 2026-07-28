@@ -92,6 +92,7 @@ const campoPausa = document.getElementById('campo-pausa')
 const blocoErro = document.getElementById('bloco-erro')
 
 let diaSelecionado = (new Date().getDay() + 6) % 7
+let editandoBlocoId = null
 
 function montarAbas() {
   diasAbas.innerHTML = DIAS.map((nome, i) =>
@@ -121,7 +122,10 @@ function formatarBloco(bloco) {
         ${detalhe}
       </span>
       <span class="bloco-tag ${modo.classe}">${modo.rotulo}</span>
-      <button class="btn-remover" data-id="${bloco.id}" title="Remover">×</button>
+      <div class="acoes">
+        <button class="btn-editar" data-id="${bloco.id}" title="Editar">✎</button>
+        <button class="btn-remover" data-id="${bloco.id}" title="Remover">×</button>
+      </div>
     </li>`
 }
 
@@ -146,6 +150,24 @@ async function carregarBlocos() {
       carregarBlocos()
     })
   })
+
+  listaBlocos.querySelectorAll('.btn-editar').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const id = Number(btn.dataset.id)
+      const bloco = blocos.find((b) => b.id === id)
+      if (bloco) {
+        editandoBlocoId = id
+        document.getElementById('bloco-inicio').value = bloco.hora_inicio
+        document.getElementById('bloco-fim').value = bloco.hora_fim
+        document.getElementById('bloco-atividade').value = bloco.atividade
+        seletorModo.value = bloco.modo
+        document.getElementById('bloco-pausa').value = bloco.pausa_intervalo_min || ''
+        campoPausa.classList.toggle('escondido', bloco.modo !== 'foco')
+        formBloco.querySelector('button[type="submit"]').textContent = 'Salvar edição'
+        abrirForm()
+      }
+    })
+  })
 }
 
 function abrirForm() {
@@ -154,6 +176,8 @@ function abrirForm() {
 }
 
 function fecharForm() {
+  editandoBlocoId = null
+  formBloco.querySelector('button[type="submit"]').textContent = 'Salvar bloco'
   formBloco.reset()
   blocoErro.classList.add('escondido')
   campoPausa.classList.remove('escondido')
@@ -184,7 +208,12 @@ formBloco.addEventListener('submit', async (evento) => {
     return
   }
 
-  await window.pywebview.api.salvar_bloco(diaSelecionado, inicio, fim, atividade, modo, pausa)
+  if (editandoBlocoId) {
+    await window.pywebview.api.editar_bloco(editandoBlocoId, diaSelecionado, inicio, fim, atividade, modo, pausa)
+  } else {
+    await window.pywebview.api.salvar_bloco(diaSelecionado, inicio, fim, atividade, modo, pausa)
+  }
+  
   fecharForm()
   carregarBlocos()
 })
@@ -194,6 +223,8 @@ const btnNovoApp = document.getElementById('btn-novo-app')
 const formApp = document.getElementById('form-app')
 const btnCancelarApp = document.getElementById('btn-cancelar-app')
 
+let editandoAppId = null
+
 function formatarApp(app) {
   return `
     <li class="item-app">
@@ -201,7 +232,10 @@ function formatarApp(app) {
         <span class="app-nome">${app.nome}</span>
         <span class="app-processo">${app.processo}</span>
       </span>
-      <button class="btn-remover" data-id="${app.id}" title="Remover">×</button>
+      <div class="acoes">
+        <button class="btn-editar" data-id="${app.id}" title="Editar">✎</button>
+        <button class="btn-remover" data-id="${app.id}" title="Remover">×</button>
+      </div>
     </li>`
 }
 
@@ -226,6 +260,20 @@ async function carregarApps() {
       carregarApps()
     })
   })
+
+  listaApps.querySelectorAll('.btn-editar').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const id = Number(btn.dataset.id)
+      const app = apps.find((a) => a.id === id)
+      if (app) {
+        editandoAppId = id
+        document.getElementById('app-nome').value = app.nome
+        document.getElementById('app-processo').value = app.processo
+        formApp.querySelector('button[type="submit"]').textContent = 'Salvar edição'
+        abrirFormApp()
+      }
+    })
+  })
 }
 
 async function abrirFormApp() {
@@ -240,6 +288,8 @@ async function abrirFormApp() {
 }
 
 function fecharFormApp() {
+  editandoAppId = null
+  formApp.querySelector('button[type="submit"]').textContent = 'Salvar app'
   formApp.reset()
   formApp.classList.add('escondido')
   btnNovoApp.classList.remove('escondido')
@@ -255,7 +305,12 @@ formApp.addEventListener('submit', async (evento) => {
   const nome = document.getElementById('app-nome').value.trim()
   const processo = document.getElementById('app-processo').value.trim()
 
-  await window.pywebview.api.salvar_app(nome, processo)
+  if (editandoAppId) {
+    await window.pywebview.api.editar_app(editandoAppId, nome, processo)
+  } else {
+    await window.pywebview.api.salvar_app(nome, processo)
+  }
+  
   fecharFormApp()
   carregarApps()
 })

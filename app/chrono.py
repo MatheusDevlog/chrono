@@ -67,6 +67,9 @@ class API:
     def remover_bloco(self, id_bloco):
         agenda.remover_bloco(id_bloco)
 
+    def editar_bloco(self, id_bloco, dia_semana, hora_inicio, hora_fim, atividade, modo, pausa_intervalo_min):
+        agenda.editar_bloco(id_bloco, dia_semana, hora_inicio, hora_fim, atividade, modo, pausa_intervalo_min)
+
     def listar_apps(self):
         return apps.listar_apps()
 
@@ -75,6 +78,9 @@ class API:
 
     def remover_app(self, id_app):
         apps.remover_app(id_app)
+
+    def editar_app(self, id_app, nome, processo):
+        apps.editar_app(id_app, nome, processo)
 
     def listar_processos_abertos(self):
         import win32gui
