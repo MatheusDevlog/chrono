@@ -32,6 +32,7 @@ saindo = False
 ignorado_ate = None
 sonecas_por_bloco = {}
 bloco_atual_vigia_id = None
+app_ativado = False
 
 class API:
     def iniciar_foco(self):
@@ -41,8 +42,9 @@ class API:
         print(f'[Chrono] Foco iniciado às {foco_inicio.strftime("%H:%M:%S")}.')
 
     def concluir_tarefas(self):
-        global tarefas_concluidas, foco_inicio
+        global tarefas_concluidas, foco_inicio, ignorado_ate
         tarefas_concluidas = True
+        ignorado_ate = float('inf')
 
         if foco_inicio is not None:
             fim = datetime.datetime.now()
@@ -72,6 +74,16 @@ class API:
         if bloco_atual_vigia_id is None:
             return 0
         return sonecas_por_bloco.get(bloco_atual_vigia_id, 0)
+
+    def alternar_chrono(self):
+        global app_ativado
+        app_ativado = not app_ativado
+        estado = 'ativado' if app_ativado else 'desativado'
+        print(f'[Chrono] App {estado}.')
+        return app_ativado
+
+    def esta_ativado(self):
+        return app_ativado
 
     def listar_sessoes(self):
         return banco.listar_sessoes(10)
@@ -167,6 +179,11 @@ def vigiar():
     print(f'[Chrono] Vigia ligado. Verificando agenda e apps a cada {INTERVALO}s.')
     while True:
         time.sleep(INTERVALO)
+
+        if not app_ativado:
+            if cobranca_aberta():
+                fechar_cobranca()
+            continue
 
         bloco = agenda.obter_bloco_atual()
 

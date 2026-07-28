@@ -18,33 +18,24 @@ navItens.forEach((item) => {
   })
 })
 
-const btnIniciar = document.getElementById('btn-iniciar')
-const btnConcluir = document.getElementById('btn-concluir')
-const status = document.getElementById('status')
+const btnAtivar = document.getElementById('btn-ativar')
 const lista = document.getElementById('lista-sessoes')
 
-btnIniciar.addEventListener('click', async () => {
-  if (!window.pywebview) {
-    status.textContent = 'Fora do Chrono: a ponte com o Python não existe aqui.'
-    return
-  }
-  await window.pywebview.api.iniciar_foco()
-
-  btnIniciar.disabled = true
-  btnConcluir.disabled = false
-  status.textContent = 'Foco em andamento. Bom trabalho!'
-})
-
-btnConcluir.addEventListener('click', async () => {
+btnAtivar.addEventListener('click', async () => {
   if (!window.pywebview) return
-  await window.pywebview.api.concluir_tarefas()
-
-  btnConcluir.disabled = true
-  btnIniciar.disabled = false
-  status.textContent = 'Sessão concluída e salva no histórico.'
-
-  carregarHistorico()
+  const ativo = await window.pywebview.api.alternar_chrono()
+  btnAtivar.classList.toggle('ativado', ativo)
+  btnAtivar.classList.toggle('desativado', !ativo)
+  btnAtivar.querySelector('.ativar-texto').textContent = ativo ? 'Chrono ativo' : 'Ativar Chrono'
 })
+
+async function sincronizarEstado() {
+  if (!window.pywebview) return
+  const ativo = await window.pywebview.api.esta_ativado()
+  btnAtivar.classList.toggle('ativado', ativo)
+  btnAtivar.classList.toggle('desativado', !ativo)
+  btnAtivar.querySelector('.ativar-texto').textContent = ativo ? 'Chrono ativo' : 'Ativar Chrono'
+}
 
 function formatarDuracao(segundos) {
   const min = Math.floor(segundos / 60)
@@ -70,7 +61,7 @@ async function carregarHistorico() {
   const sessoes = await window.pywebview.api.listar_sessoes()
 
   if (sessoes.length === 0) {
-    lista.innerHTML = '<li class="lista-vazia">Nenhuma sessão ainda. Inicie o foco!</li>'
+    lista.innerHTML = '<li class="lista-vazia">Nenhuma sessão ainda. Ative o Chrono e conclua um bloco de foco!</li>'
     return
   }
 
@@ -319,6 +310,10 @@ montarAbas()
 
 if (window.pywebview) {
   carregarHistorico()
+  sincronizarEstado()
 } else {
-  window.addEventListener('pywebviewready', carregarHistorico)
+  window.addEventListener('pywebviewready', () => {
+    carregarHistorico()
+    sincronizarEstado()
+  })
 }
