@@ -387,56 +387,93 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 20px;
   cursor: pointer;
   padding: 40px;
   border-radius: 50%;
-  transition: background 0.2s ease, transform 0.15s ease;
+  transition: transform 0.2s ease;
 }
 
-.botao-ativar:hover { transform: scale(1.04); }
-.botao-ativar:active { transform: scale(0.96); }
+.botao-ativar:hover { transform: scale(1.05); }
+.botao-ativar:active { transform: scale(0.95); }
 
 .ativar-icone {
-  width: 72px;
-  height: 72px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
   border: 4px solid var(--texto-suave);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+  box-shadow:
+    0 0 0 2px var(--fundo),
+    0 0 0 5px var(--texto-suave),
+    inset 0 0 0 2px var(--fundo);
+}
+
+.botao-ativar:hover .ativar-icone {
+  border-color: var(--primaria);
+  box-shadow:
+    0 0 0 2px var(--fundo),
+    0 0 0 5px var(--primaria),
+    inset 0 0 0 2px var(--fundo);
 }
 
 .ativar-icone::after {
   content: '';
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   background: var(--texto-suave);
-  transition: background 0.2s ease;
+  transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.botao-ativar:hover .ativar-icone::after {
+  background: var(--primaria);
 }
 
 .botao-ativar.ativado .ativar-icone {
   border-color: var(--info);
-  background: rgba(87, 196, 230, 0.1);
-  box-shadow: 0 0 24px rgba(87, 196, 230, 0.3);
+  background: rgba(87, 196, 230, 0.08);
+  box-shadow:
+    0 0 0 2px var(--fundo),
+    0 0 0 5px var(--info),
+    inset 0 0 0 2px var(--fundo),
+    0 0 32px rgba(87, 196, 230, 0.25);
+  animation: ativar-pulso 0.5s ease-out;
 }
 
 .botao-ativar.ativado .ativar-icone::after {
   background: var(--info);
-  box-shadow: 0 0 12px rgba(87, 196, 230, 0.6);
+  box-shadow: 0 0 16px rgba(87, 196, 230, 0.5);
+}
+
+@keyframes ativar-pulso {
+  0%   { transform: scale(0.92); }
+  40%  { transform: scale(1.08); }
+  70%  { transform: scale(0.97); }
+  100% { transform: scale(1); }
 }
 
 .ativar-texto {
-  font-family: 'Rubik', sans-serif;
-  font-size: 20px;
-  font-weight: 500;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 13px;
   color: var(--texto-suave);
-  transition: color 0.2s ease;
+  text-align: center;
+  line-height: 1.6;
+  transition: color 0.3s ease, text-shadow 0.3s ease;
+  letter-spacing: 1px;
 }
 
-.botao-ativar.ativado .ativar-texto { color: var(--info); }
+.botao-ativar:hover .ativar-texto {
+  color: var(--primaria);
+}
+
+.botao-ativar.ativado .ativar-texto {
+  color: var(--info);
+  text-shadow: 0 0 10px rgba(87, 196, 230, 0.4);
+}
 
 .tutorial {
   max-width: 480px;
