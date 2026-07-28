@@ -124,13 +124,14 @@
 
         <form class="form-bloco escondido" id="form-app">
           <label class="campo">
-            <span>Nome do App</span>
-            <input type="text" id="app-nome" placeholder="Ex.: Steam, Valorant, Navegador" required>
+            <span>Apelido</span>
+            <input type="text" id="app-nome" placeholder="Ex.: Steam, Valorant, Meu Navegador" required>
           </label>
 
           <label class="campo">
             <span>Nome do Processo (.exe)</span>
-            <input type="text" id="app-processo" placeholder="Ex.: steam.exe, valorant.exe, chrome.exe" required>
+            <input type="text" id="app-processo" list="lista-processos" placeholder="Digite ou selecione na lista..." required>
+            <datalist id="lista-processos"></datalist>
           </label>
 
           <div class="form-acoes">

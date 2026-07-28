@@ -228,9 +228,15 @@ async function carregarApps() {
   })
 }
 
-function abrirFormApp() {
+async function abrirFormApp() {
   formApp.classList.remove('escondido')
   btnNovoApp.classList.add('escondido')
+
+  if (window.pywebview) {
+    const processos = await window.pywebview.api.listar_processos_abertos()
+    const datalist = document.getElementById('lista-processos')
+    datalist.innerHTML = processos.map(p => `<option value="${p}">`).join('')
+  }
 }
 
 function fecharFormApp() {

@@ -76,6 +76,26 @@ class API:
     def remover_app(self, id_app):
         apps.remover_app(id_app)
 
+    def listar_processos_abertos(self):
+        ignorados = {
+            'svchost.exe', 'csrss.exe', 'lsass.exe', 'smss.exe',
+            'services.exe', 'wininit.exe', 'explorer.exe',
+            'system', 'registry', 'taskmgr.exe', 'conhost.exe',
+            'fontdrvhost.exe', 'dwm.exe', 'spoolsv.exe',
+            'ctfmon.exe', 'sihost.exe', 'taskhostw.exe',
+            'runtimebroker.exe', 'searchapp.exe', 'searchindexer.exe',
+            'dllhost.exe', 'wmiprvse.exe', 'wlanext.exe',
+            'securityhealthservice.exe', 'cmd.exe', 'python.exe',
+            'pythonw.exe', 'wsl.exe', 'vmmem', 'vmmemwsl'
+        }
+        processos = set()
+        for p in psutil.process_iter(['name']):
+            nome = p.info['name']
+            if nome and nome.lower() not in ignorados:
+                processos.add(nome)
+        
+        return sorted(list(processos), key=lambda s: s.lower())
+
 api = API()
 
 def app_aberto(nome_processo):
