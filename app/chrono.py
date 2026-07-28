@@ -77,24 +77,30 @@ class API:
         apps.remover_app(id_app)
 
     def listar_processos_abertos(self):
-        ignorados = {
-            'svchost.exe', 'csrss.exe', 'lsass.exe', 'smss.exe',
-            'services.exe', 'wininit.exe', 'explorer.exe',
-            'system', 'registry', 'taskmgr.exe', 'conhost.exe',
-            'fontdrvhost.exe', 'dwm.exe', 'spoolsv.exe',
-            'ctfmon.exe', 'sihost.exe', 'taskhostw.exe',
-            'runtimebroker.exe', 'searchapp.exe', 'searchindexer.exe',
-            'dllhost.exe', 'wmiprvse.exe', 'wlanext.exe',
-            'securityhealthservice.exe', 'cmd.exe', 'python.exe',
-            'pythonw.exe', 'wsl.exe', 'vmmem', 'vmmemwsl'
-        }
-        processos = set()
-        for p in psutil.process_iter(['name']):
-            nome = p.info['name']
-            if nome and nome.lower() not in ignorados:
-                processos.add(nome)
+        import win32gui
+        import win32process
         
-        return sorted(list(processos), key=lambda s: s.lower())
+        processos_com_janela = set()
+        
+        def callback_janela(hwnd, _):
+            if win32gui.IsWindowVisible(hwnd) and win32gui.GetWindowText(hwnd):
+                _, pid = win32process.GetWindowThreadProcessId(hwnd)
+                try:
+                    p = psutil.Process(pid)
+                    nome = p.name()
+                    ignorados = {
+                        'explorer.exe', 'applicationframehost.exe', 
+                        'systemsettings.exe', 'textinputhost.exe',
+                        'searchapp.exe', 'searchindexer.exe'
+                    }
+                    if nome and nome.lower() not in ignorados:
+                        processos_com_janela.add(nome)
+                except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                    pass
+        
+        win32gui.EnumWindows(callback_janela, None)
+        
+        return sorted(list(processos_com_janela), key=lambda s: s.lower())
 
 api = API()
 
