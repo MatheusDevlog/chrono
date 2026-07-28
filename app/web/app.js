@@ -26,7 +26,7 @@ btnAtivar.addEventListener('click', async () => {
   const ativo = await window.pywebview.api.alternar_chrono()
   btnAtivar.classList.toggle('ativado', ativo)
   btnAtivar.classList.toggle('desativado', !ativo)
-  btnAtivar.querySelector('.ativar-texto').textContent = ativo ? 'Chrono ativo' : 'Ativar Chrono'
+  btnAtivar.querySelector('.ativar-texto').textContent = ativo ? 'CHRONO ATIVO' : 'ATIVAR CHRONO'
 })
 
 async function sincronizarEstado() {
@@ -34,7 +34,7 @@ async function sincronizarEstado() {
   const ativo = await window.pywebview.api.esta_ativado()
   btnAtivar.classList.toggle('ativado', ativo)
   btnAtivar.classList.toggle('desativado', !ativo)
-  btnAtivar.querySelector('.ativar-texto').textContent = ativo ? 'Chrono ativo' : 'Ativar Chrono'
+  btnAtivar.querySelector('.ativar-texto').textContent = ativo ? 'CHRONO ATIVO' : 'ATIVAR CHRONO'
 }
 
 function formatarDuracao(segundos) {
