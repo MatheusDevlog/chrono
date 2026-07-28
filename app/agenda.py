@@ -1,4 +1,5 @@
 import sqlite3
+import datetime
 
 from banco import conectar
 
@@ -69,3 +70,22 @@ def editar_bloco(id_bloco, dia_semana, hora_inicio, hora_fim, atividade, modo, p
     )
     conexao.commit()
     conexao.close()
+
+
+def obter_bloco_atual(dia_semana=None, hora_str=None):
+    if dia_semana is None or hora_str is None:
+        agora = datetime.datetime.now()
+        dia_semana = agora.weekday()
+        hora_str = agora.strftime("%H:%M")
+
+    blocos = listar_blocos(dia_semana)
+    for bloco in blocos:
+        inicio = bloco["hora_inicio"]
+        fim = bloco["hora_fim"]
+        if inicio <= fim:
+            if inicio <= hora_str < fim:
+                return bloco
+        else:
+            if hora_str >= inicio or hora_str < fim:
+                return bloco
+    return None
