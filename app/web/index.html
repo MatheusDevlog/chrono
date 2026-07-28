@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
   <div class="app">
     <aside class="sidebar">
       <span class="logo">CHRONO</span>
@@ -19,31 +20,25 @@
 
     <main class="conteudo">
       <section class="view ativa" id="view-inicio">
-        <div class="painel">
-          <section class="cartao">
-            <div class="icone">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none"
-                   stroke="currentColor" stroke-width="2"
-                   stroke-linecap="round" stroke-linejoin="round">
-                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
-                <circle cx="12" cy="12" r="3"/>
+        <div class="painel-inicio">
+          <button id="btn-ativar" class="botao-ativar desativado">
+            <span class="btn-face">
+              <svg class="btn-icone" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9"/>
+                <line x1="12" y1="5" x2="12" y2="13"/>
               </svg>
-            </div>
+              <span class="ativar-texto">ATIVAR CHRONO</span>
+            </span>
+          </button>
 
-            <h1 class="titulo">Vigia ativo</h1>
-            <p class="descricao">
-              Inicie uma sessão de foco. Enquanto ela durar, o Chrono cobra se
-              você abrir um app de recompensa. Ao concluir, a sessão vai pro
-              seu histórico.
-            </p>
-
-            <div class="botoes">
-              <button id="btn-iniciar" class="botao-principal">Iniciar foco</button>
-              <button id="btn-concluir" class="botao-secundario" disabled>Concluir tarefas</button>
-            </div>
-
-            <p id="status" class="rodape-status"></p>
-          </section>
+          <div class="tutorial">
+            <h2 class="tutorial-titulo">Como funciona</h2>
+            <ol class="tutorial-lista">
+              <li><strong>Monte sua agenda</strong> — vá em "Agenda" e crie blocos de foco, pausa e livre para cada dia da semana.</li>
+              <li><strong>Cadastre os apps que te distraem</strong> — em "Apps vigiados", adicione os programas que atrapalham seu foco (jogos, redes sociais, navegador...).</li>
+              <li><strong>Ative o Chrono</strong> — ele vigia automaticamente. Nos blocos de foco, se um app proibido abrir, você será cobrado!</li>
+            </ol>
+          </div>
 
           <section class="historico">
             <h2 class="historico-titulo">Sessões de foco</h2>
