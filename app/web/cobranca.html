@@ -14,22 +14,44 @@
       height: 100vh; margin: 0; text-align: center;
     }
     h1 { font-size: 20px; margin: 0 0 8px; color: #F39A1F; }
-    p  { color: #A6BAB5; margin: 0 24px 24px; font-size: 14px; }
-    .botoes { display: flex; gap: 16px; }
+    #mensagem { color: #A6BAB5; margin: 0 24px 12px; font-size: 14px; }
+    #aviso     { color: #F39A1F; margin: 0 24px 20px; font-size: 13px; display: none; }
+    .botoes { display: flex; flex-direction: column; gap: 8px; width: 220px; }
     button {
-      font-size: 15px; padding: 10px 24px;
+      font-size: 14px; padding: 10px 24px;
       border: none; border-radius: 8px; cursor: pointer;
     }
-    .concluir { background: #F39A1F; color: #12302D; }
+    .concluir { background: #57C4E6; color: #12302D; font-weight: 600; }
+    .soneca   { background: #F39A1F; color: #12302D; }
     .ignorar  { background: #C42E4C; color: #F2EEE6; }
   </style>
 </head>
 <body>
-  <h1>Ei! Suas tarefas ainda não terminaram!</h1>
-  <p>Feche o app de recompensa ou conclua o que combinou primeiro.</p>
+  <h1>Ei! Você está em foco!</h1>
+  <p id="mensagem">Feche o app ou use a soneca para finalizar a tarefa.</p>
+  <p id="aviso"></p>
   <div class="botoes">
-    <button class="concluir" onclick="window.pywebview.api.concluir_tarefas()">Já concluí!</button>
-    <button class="ignorar" onclick="window.pywebview.api.ignorar()">Agora não</button>
+    <button class="concluir" onclick="concluir()">Concluir foco</button>
+    <button class="soneca" onclick="soneca()">Soneca 2 min</button>
+    <button class="ignorar" onclick="ignorar()">Ignorar bloco</button>
   </div>
+  <script>
+    async function avisarSoneca() {
+      const count = await window.pywebview.api.soneca_count()
+      const aviso = document.getElementById('aviso')
+      if (count >= 1) {
+        aviso.textContent = '⚠️ Sonecas extras custarão pontos! Você já usou a gratuita neste bloco.'
+        aviso.style.display = 'block'
+      }
+    }
+
+    window.pywebviewready = avisarSoneca
+
+    if (window.pywebview) avisarSoneca()
+
+    function ignorar()  { window.pywebview.api.ignorar() }
+    function soneca()   { window.pywebview.api.soneca() }
+    function concluir() { window.pywebview.api.concluir_tarefas() }
+  </script>
 </body>
 </html>

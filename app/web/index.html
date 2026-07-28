@@ -90,7 +90,7 @@
               <span>Modo</span>
               <select id="bloco-modo">
                 <option value="foco">Foco (vigia e cobra)</option>
-                <option value="pausa">Pausa (levanta, estica)</option>
+                <option value="pausa">Pausa (esticar o corpo)</option>
                 <option value="livre">Livre (não incomoda)</option>
               </select>
             </label>
@@ -124,14 +124,14 @@
 
         <form class="form-bloco escondido" id="form-app">
           <label class="campo">
-            <span>Apelido</span>
-            <input type="text" id="app-nome" placeholder="Ex.: Steam, Valorant, Meu Navegador" required>
-          </label>
-
-          <label class="campo">
             <span>Nome do Processo (.exe)</span>
             <input type="text" id="app-processo" list="lista-processos" placeholder="Digite ou selecione na lista..." required>
             <datalist id="lista-processos"></datalist>
+          </label>
+
+          <label class="campo">
+            <span>Apelido</span>
+            <input type="text" id="app-nome" placeholder="Ex.: Steam, Valorant, Meu Navegador" required>
           </label>
 
           <div class="form-acoes">

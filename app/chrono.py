@@ -29,6 +29,10 @@ foco_inicio = None
 janela_principal = None
 saindo = False
 
+ignorado_ate = None
+sonecas_por_bloco = {}
+bloco_atual_vigia_id = None
+
 class API:
     def iniciar_foco(self):
         global foco_inicio, tarefas_concluidas
@@ -51,8 +55,23 @@ class API:
         fechar_cobranca()
 
     def ignorar(self):
-        print('[Chrono] Ignorado. Cobro de novo se o app continuar aberto.')
+        global ignorado_ate
+        ignorado_ate = float('inf')
+        print('[Chrono] Bloco ignorado. Não cobro até o próximo bloco.')
         fechar_cobranca()
+
+    def soneca(self):
+        global ignorado_ate, bloco_atual_vigia_id
+        if bloco_atual_vigia_id is not None:
+            sonecas_por_bloco[bloco_atual_vigia_id] = sonecas_por_bloco.get(bloco_atual_vigia_id, 0) + 1
+        ignorado_ate = time.time() + 120
+        print(f'[Chrono] Soneca de 2 min. Já usou {sonecas_por_bloco.get(bloco_atual_vigia_id, 0)} soneca(s) neste bloco.')
+        fechar_cobranca()
+
+    def soneca_count(self):
+        if bloco_atual_vigia_id is None:
+            return 0
+        return sonecas_por_bloco.get(bloco_atual_vigia_id, 0)
 
     def listar_sessoes(self):
         return banco.listar_sessoes(10)
@@ -144,14 +163,25 @@ def fechar_cobranca():
 
 
 def vigiar():
+    global bloco_atual_vigia_id
     print(f'[Chrono] Vigia ligado. Verificando agenda e apps a cada {INTERVALO}s.')
     while True:
         time.sleep(INTERVALO)
 
         bloco = agenda.obter_bloco_atual()
+
+        if bloco and bloco['id'] != bloco_atual_vigia_id:
+            bloco_atual_vigia_id = bloco['id']
+            if bloco_atual_vigia_id not in sonecas_por_bloco:
+                sonecas_por_bloco[bloco_atual_vigia_id] = 0
+
         if bloco is None or bloco['modo'] != 'foco':
+            bloco_atual_vigia_id = None
             if cobranca_aberta():
                 fechar_cobranca()
+            continue
+
+        if ignorado_ate and time.time() < ignorado_ate:
             continue
 
         apps_bloqueados = apps.listar_apps()
