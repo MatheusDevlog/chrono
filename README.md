@@ -7,7 +7,7 @@
 
 O nome é uma homenagem ao **Chrono Trigger** e à ideia de **tempo** bem usado.
 
-> **Status:** em desenvolvimento — projeto pessoal e de aprendizado.
+> **Status:** funcional — projeto pessoal e de aprendizado.
 
 ---
 
@@ -60,18 +60,21 @@ VT323 (cronômetro).
 
 ## Funcionalidades
 
-- [x] Pop-up de cobrança "por cima de tudo" com botões Sim/Não
-- [x] Vigia de processos: detecta apps "recompensa" e dispara a cobrança
-- [x] Dashboard em HTML/CSS/JS puro, servido pelo pywebview
-- [x] Histórico de sessões de foco salvo em banco (SQLite)
-- [x] Ícone na bandeja do sistema e iniciar junto com o Windows
-- [ ] Instalador de dois cliques
+- [x] Painel inicial com botão **Ativar/Desativar** e tutorial interativo
+- [x] **Agenda semanal** (Seg–Dom) com blocos de Foco / Pausa / Livre
+- [x] **Apps vigiados** com seletor de processos visíveis do Windows
+- [x] **Estatísticas** em 3 abas: Semana, Horários (Manhã/Tarde/Noite/Madrugada), Mês
+- [x] Sistema de **HP / Shield / Streak** com multiplicador progressivo
+- [x] Pop-up de cobrança "por cima de tudo" (Concluir / Ignorar / Soneca)
+- [x] Histórico de sessões de foco salvo em SQLite
+- [x] Ícone na bandeja do sistema + auto-início com Windows
+- [x] Instalador `.exe` de dois cliques (PyInstaller + Inno Setup)
 
 ---
 
 ## Como rodar (ambiente de desenvolvimento)
 
-> Instruções detalhadas e mastigadas estão na pasta [`GUIA/`](./GUIA).
+> Instruções detalhadas estão na pasta [`GUIA/`](./GUIA).
 
 ```powershell
 cd app
@@ -79,6 +82,66 @@ python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 python chrono.py
+```
+
+---
+
+## Como gerar o instalador (para desenvolvedores)
+
+### 1. Gerar o executável com PyInstaller
+```powershell
+cd app
+pyinstaller Chrono.spec
+```
+Isso cria `dist/Chrono/Chrono.exe` com todos os arquivos da `web/` e `fonts/` embarcados.
+
+### 2. Criar o instalador `.exe` com Inno Setup
+1. Instale o **Inno Setup Compiler** (jrsoftware.org/isdl.php)
+2. Abra o programa → `File → Open` → selecione `app/chrono.iss`
+3. Clique em **Compile** (ou `Ctrl+F9`)
+4. O instalador final sai em `app/Output/chrono-setup.exe`
+
+> O script `chrono.iss` já está configurado para:
+> - Instalar na pasta do usuário (sem pedir admin)
+> - Criar atalhos no Menu Iniciar e Desktop (opcional)
+> - Usar o ícone oficial `LogoC.ico`
+
+---
+
+## Distribuição (para usuários finais)
+
+**Não commite binários no repositório.** O Git é para código-fonte.
+
+Opções recomendadas:
+1. **GitHub Releases** — anexe o `chrono-setup.exe` gerado em cada tag/release
+2. **GitHub Actions** — automatize o build e publique o artefato no Release
+3. **Site próprio / itch.io / Microsoft Store** — para distribuição pública
+
+---
+
+## Estrutura do projeto
+
+```
+chrono/
+├── app/
+│   ├── chrono.py          # Entry point + API Python
+│   ├── chrono.spec        # Config PyInstaller
+│   ├── chrono.iss         # Script Inno Setup
+│   ├── bandeja.py         # System tray (pystray)
+│   ├── inicializacao.py   # Auto-start Windows
+│   ├── banco.py           # SQLite helpers
+│   ├── agenda.py          # CRUD blocos da semana
+│   ├── apps.py            # CRUD apps vigiados
+│   ├── pontuacao.py       # HP, Shield, Streak, Stats
+│   ├── web/
+│   │   ├── index.html     # Dashboard principal
+│   │   ├── cobranca.html  # Pop-up de cobrança
+│   │   ├── app.js         # Lógica front-end
+│   │   ├── style.css      # Estilos (tema dark teal)
+│   │   └── LogoC.ico      # Ícone oficial (tray + favicon)
+│   └── fonts/             # PressStart2P, Rubik, Pixelify, VT323
+├── GUIA/                  # Docs internas (ignorado pelo git)
+└── README.md
 ```
 
 ---
