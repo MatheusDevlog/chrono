@@ -16,7 +16,7 @@ SolidCompression=yes
 ; lowest = instala so pro usuario atual, SEM pedir senha de administrador.
 PrivilegesRequired=lowest
 WizardStyle=modern
-SetupIconFile=chrono.ico
+SetupIconFile=LogoC.ico
 
 [Tasks]
 Name: "desktopicon"; Description: "Criar atalho na area de trabalho"; GroupDescription: "Atalhos:"
