@@ -31,16 +31,16 @@
   <p id="mensagem">Feche o app ou use a soneca para finalizar a tarefa.</p>
   <p id="aviso"></p>
   <div class="botoes">
-    <button class="concluir" onclick="concluir()">Concluir foco</button>
+    <button class="concluir" onclick="concluir()">Concluir foco (+shield)</button>
     <button class="soneca" onclick="soneca()">Soneca 2 min</button>
-    <button class="ignorar" onclick="ignorar()">Ignorar bloco</button>
+    <button class="ignorar" onclick="ignorar()">Ignorar bloco (-25 HP)</button>
   </div>
   <script>
     async function avisarSoneca() {
       const count = await window.pywebview.api.soneca_count()
       const aviso = document.getElementById('aviso')
       if (count >= 1) {
-        aviso.textContent = '⚠️ Sonecas extras custarão pontos! Você já usou a gratuita neste bloco.'
+        aviso.textContent = '⚠️ Sonecas extras custam -5 HP cada! Você já usou a gratuita neste bloco.'
         aviso.style.display = 'block'
       }
     }
