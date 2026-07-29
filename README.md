@@ -2,7 +2,7 @@
 
 > Um app de desktop para Windows que ajuda você a **dividir bem o seu dia** —
 > estudo, trabalho, descanso, exercício e lazer — com lembretes que
-> *incomodam de propósito* e liberam suas recompensas (jogos, vídeos, etc.) só
+> *incomodam de propósito* e liberam seu tempo livre (jogos, vídeos, etc.) só
 > depois que você cumpre suas metas.
 
 O nome é uma homenagem ao **Chrono Trigger** e à ideia de **tempo** bem usado.
@@ -18,7 +18,7 @@ manter o foco e o equilíbrio:
 
 - Sobe junto com o Windows e fica num ícone perto do relógio (bandeja).
 - Dispara **pop-ups "chatos"** nos momentos certos ("Você já estudou hoje?").
-- Percebe quando você abre um app "recompensa" (jogo, YouTube, Steam) e, se as
+- Percebe quando você abre um **app vigiado** (jogo, YouTube, Steam) e, se as
   tarefas do dia não foram cumpridas, fica **te cutucando** até você fazer o
   combinado.
 - **Não bloqueia nada no nível do sistema** — só incomoda. É psicológico, e é o
@@ -49,8 +49,8 @@ Tema **dark teal** inspirado na paleta do **Chrono Trigger**.
 | Cor | Hex | Uso |
 |-----|-----|-----|
 | Teal profundo | `#12302D` | Fundo |
-| Laranja Crono | `#F39A1F` | Ação / recompensa |
-| Carmesim | `#C42E4C` | Bloqueado |
+| Laranja Crono | `#F39A1F` | Ação / destaque |
+| Carmesim | `#C42E4C` | Bloqueado / erro |
 | Ciano | `#57C4E6` | Foco / info |
 
 **Fontes:** Press Start 2P (logo) · Pixelify Sans (títulos) · Rubik (interface) ·
@@ -73,8 +73,6 @@ VT323 (cronômetro).
 ---
 
 ## Como rodar (ambiente de desenvolvimento)
-
-> Instruções detalhadas estão na pasta [`GUIA/`](./GUIA).
 
 ```powershell
 cd app
@@ -108,17 +106,6 @@ Isso cria `dist/Chrono/Chrono.exe` com todos os arquivos da `web/` e `fonts/` em
 
 ---
 
-## Distribuição (para usuários finais)
-
-**Não commite binários no repositório.** O Git é para código-fonte.
-
-Opções recomendadas:
-1. **GitHub Releases** — anexe o `chrono-setup.exe` gerado em cada tag/release
-2. **GitHub Actions** — automatize o build e publique o artefato no Release
-3. **Site próprio / itch.io / Microsoft Store** — para distribuição pública
-
----
-
 ## Estrutura do projeto
 
 ```
@@ -140,7 +127,6 @@ chrono/
 │   │   ├── style.css      # Estilos (tema dark teal)
 │   │   └── LogoC.ico      # Ícone oficial (tray + favicon)
 │   └── fonts/             # PressStart2P, Rubik, Pixelify, VT323
-├── GUIA/                  # Docs internas (ignorado pelo git)
 └── README.md
 ```
 
