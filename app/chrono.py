@@ -10,6 +10,7 @@ import agenda
 import apps
 import banco
 import bandeja
+import pontuacao
 
 INTERVALO = 5
 
@@ -50,7 +51,26 @@ class API:
             fim = datetime.datetime.now()
             duracao = int((fim - foco_inicio).total_seconds())
             banco.salvar_sessao(foco_inicio.isoformat(), fim.isoformat(), duracao)
-            print(f'[Chrono] Sessão de foco salva: {duracao}s.')
+
+            horas = duracao / 3600
+            base = int(horas * 10)
+            streak_atual, _ = pontuacao.calcular_streak()
+            mult = pontuacao.multiplicador_streak(streak_atual)
+            pontos = int(base * mult)
+            agora = datetime.datetime.now()
+            data = agora.date().isoformat()
+            hora_str = agora.strftime("%H:%M")
+            if pontos > 0:
+                pontuacao.registrar(data, 'completou_foco', pontos, bloco_atual_vigia_id, hora_str)
+
+            if bloco_atual_vigia_id is not None:
+                sonecas = sonecas_por_bloco.get(bloco_atual_vigia_id, 0)
+                if sonecas > 1:
+                    extras = sonecas - 1
+                    penalidade = extras * -5
+                    pontuacao.registrar(data, 'soneca_extra', penalidade, bloco_atual_vigia_id, hora_str)
+
+            print(f'[Chrono] Sessão de foco salva: {duracao}s (+{pontos} shield).')
             foco_inicio = None
 
         print('[Chrono] Tarefas concluídas! Parei de cobrar.')
@@ -59,13 +79,23 @@ class API:
     def ignorar(self):
         global ignorado_ate
         ignorado_ate = float('inf')
-        print('[Chrono] Bloco ignorado. Não cobro até o próximo bloco.')
+        agora = datetime.datetime.now()
+        data = agora.date().isoformat()
+        hora_str = agora.strftime("%H:%M")
+        pontuacao.registrar(data, 'ignorou', -25, bloco_atual_vigia_id, hora_str)
+        print('[Chrono] Bloco ignorado. -25 HP.')
         fechar_cobranca()
 
     def soneca(self):
         global ignorado_ate, bloco_atual_vigia_id
         if bloco_atual_vigia_id is not None:
             sonecas_por_bloco[bloco_atual_vigia_id] = sonecas_por_bloco.get(bloco_atual_vigia_id, 0) + 1
+            if sonecas_por_bloco[bloco_atual_vigia_id] > 1:
+                agora = datetime.datetime.now()
+                data = agora.date().isoformat()
+                hora_str = agora.strftime("%H:%M")
+                pontuacao.registrar(data, 'soneca_extra', -5, bloco_atual_vigia_id, hora_str)
+                print(f'[Chrono] Soneca extra! -5 HP.')
         ignorado_ate = time.time() + 120
         print(f'[Chrono] Soneca de 2 min. Já usou {sonecas_por_bloco.get(bloco_atual_vigia_id, 0)} soneca(s) neste bloco.')
         fechar_cobranca()
@@ -84,6 +114,32 @@ class API:
 
     def esta_ativado(self):
         return app_ativado
+
+    def obter_ranking(self):
+        return pontuacao.montar_ranking()
+
+    def obter_estatisticas(self, tipo):
+        hoje = datetime.date.today()
+        if tipo == 'semana':
+            inicio = hoje - datetime.timedelta(days=hoje.weekday())
+            fim = inicio + datetime.timedelta(days=6)
+            dados = pontuacao.pontos_por_dia_semana(inicio.isoformat(), fim.isoformat())
+            rotulos = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
+            return {'rotulos': rotulos, 'dados': dados}
+        if tipo == 'horarios':
+            inicio = hoje.replace(day=1)
+            fim = (inicio + datetime.timedelta(days=32)).replace(day=1) - datetime.timedelta(days=1)
+            faixas = pontuacao.pontos_por_faixa_horario(inicio.isoformat(), fim.isoformat())
+            return {
+                'rotulos': ['Manhã', 'Tarde', 'Noite', 'Madrugada'],
+                'dados': [faixas['manha'], faixas['tarde'], faixas['noite'], faixas['madrugada']],
+            }
+        if tipo == 'mes':
+            inicio = hoje.replace(day=1)
+            fim = (inicio + datetime.timedelta(days=32)).replace(day=1) - datetime.timedelta(days=1)
+            dados = pontuacao.pontos_por_semana_mes(inicio.isoformat(), fim.isoformat())
+            return {'rotulos': ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'], 'dados': dados}
+        return {'rotulos': [], 'dados': []}
 
     def listar_sessoes(self):
         return banco.listar_sessoes(10)
@@ -248,6 +304,7 @@ def main():
     banco.criar_tabela()
     agenda.criar_tabela()
     apps.criar_tabela()
+    pontuacao.criar_tabela()
 
     largura, altura = tamanho_janela(0.65)
 
