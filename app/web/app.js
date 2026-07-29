@@ -5,21 +5,32 @@ const MODOS = {
   livre: { rotulo: 'Livre', classe: 'tag-livre' },
 }
 
+try { debug('JS iniciado') } catch (e) {}
+
+function debug(msg) {
+  const el = document.getElementById('debug-log')
+  if (el) el.textContent += '\n' + msg
+  console.log(msg)
+}
+
 const navItens = document.querySelectorAll('.nav-item')
 const views = document.querySelectorAll('.view')
 
 navItens.forEach((item) => {
   item.addEventListener('click', () => {
-    const alvo = item.dataset.view
-    navItens.forEach((n) => n.classList.toggle('ativo', n === item))
-    views.forEach((v) => v.classList.toggle('ativa', v.id === `view-${alvo}`))
-    if (alvo === 'agenda') carregarBlocos()
-    if (alvo === 'apps') carregarApps()
+    try {
+      const alvo = item.dataset.view
+      navItens.forEach((n) => n.classList.toggle('ativo', n === item))
+      views.forEach((v) => v.classList.toggle('ativa', v.id === `view-${alvo}`))
+      if (alvo === 'inicio') carregarPlacar()
+      if (alvo === 'agenda') carregarBlocos()
+      if (alvo === 'apps') carregarApps()
+      if (alvo === 'estatisticas') carregarEstatisticas('semana')
+    } catch (e) { debug('nav: ' + e.message) }
   })
 })
 
 const btnAtivar = document.getElementById('btn-ativar')
-const lista = document.getElementById('lista-sessoes')
 
 btnAtivar.addEventListener('click', async () => {
   if (!window.pywebview) return
@@ -52,38 +63,115 @@ function formatarQuando(iso) {
   })
 }
 
-async function carregarHistorico() {
-  if (!window.pywebview) {
-    lista.innerHTML = '<li class="lista-vazia">Abra dentro do Chrono para ver o histórico.</li>'
-    return
-  }
+async function carregarPlacar() {
+  if (!window.pywebview) return
+  const r = await window.pywebview.api.obter_ranking()
 
-  const sessoes = await window.pywebview.api.listar_sessoes()
+  const hpW = Math.min(100, r.hp)
+  const shW = Math.min(50, r.shield)
 
-  if (sessoes.length === 0) {
-    lista.innerHTML = '<li class="lista-vazia">Nenhuma sessão ainda. Ative o Chrono e conclua um bloco de foco!</li>'
-    return
-  }
+  document.getElementById('hp-fill').style.width = hpW + '%'
+  document.getElementById('hp-fill').style.background =
+    r.hp > 75 ? '#10B981' : r.hp > 40 ? '#EAB308' : '#C42E4C'
+  document.getElementById('hp-shield').style.width = shW + '%'
 
-  lista.innerHTML = sessoes.map((s) => `
-    <li class="item-sessao">
-      <span class="quando">${formatarQuando(s.inicio)}</span>
-      <span class="duracao">${formatarDuracao(s.duracao_segundos)}</span>
-    </li>
-  `).join('')
+  document.getElementById('hp-info').textContent = r.shield > 0
+    ? r.hp + ' / 100  +' + r.shield + ' shield'
+    : r.hp + ' / 100'
+
+  document.getElementById('placar-tarefas').textContent = r.tarefas
+  document.getElementById('placar-dano').textContent = r.dano
+  document.getElementById('placar-streak').textContent = r.streak_atual
+  document.getElementById('placar-mult').textContent = r.multiplicador.toFixed(1)
+  document.getElementById('placar-recorde').textContent = r.recorde_hp
+  document.getElementById('placar-mensagem').textContent = r.mensagem
+}
+
+let estatTipoAtual = 'semana'
+
+async function carregarEstatisticas(tipo) {
+  if (!window.pywebview) return
+  estatTipoAtual = tipo || estatTipoAtual
+
+  document.querySelectorAll('.estat-aba').forEach((a) =>
+    a.classList.toggle('ativo', a.dataset.estat === estatTipoAtual)
+  )
+
+  const data = await window.pywebview.api.obter_estatisticas(estatTipoAtual)
+  desenharGrafico(data)
+}
+
+function desenharGrafico(data) {
+  const totalEl = document.getElementById('grafico-total')
+  const { rotulos, dados } = data
+
+  const hpValores = dados.map(v => Math.max(0, Math.min(150, 100 + v)))
+  const max = Math.max(...hpValores, 1)
+
+  const passos = 4
+  const passoValor = Math.ceil(max / passos)
+  const eixoY = Array.from({ length: passos + 1 }, (_, i) => i * passoValor)
+
+  document.getElementById('grafico-eixo-y').innerHTML = eixoY.map((v) =>
+    `<span>${v}</span>`
+  ).join('')
+
+  const barrasHtml = hpValores.map((valor, i) => {
+    const altura = max > 0 ? Math.round((valor / max) * 120) : 0
+    const cor = valor > 75 ? '#10B981' : valor > 40 ? '#EAB308' : '#C42E4C'
+    return `
+      <div class="barra-coluna">
+        <span class="barra-valor">${valor}</span>
+        <div class="barra-preenchimento" style="height:${Math.max(altura, 4)}px;background:${cor}"></div>
+      </div>`
+  }).join('')
+
+  document.getElementById('grafico-barras').innerHTML = barrasHtml
+
+  document.getElementById('grafico-eixo-x').innerHTML = rotulos.map((r) =>
+    `<span>${r}</span>`
+  ).join('')
+
+  const media = Math.round(hpValores.reduce((a, b) => a + b, 0) / hpValores.length)
+  totalEl.innerHTML = `Média: <strong>${media}</strong> HP`
 }
 
 const diasAbas = document.getElementById('dias-abas')
 const listaBlocos = document.getElementById('lista-blocos')
 const btnNovoBloco = document.getElementById('btn-novo-bloco')
+
+let diaSelecionado = (new Date().getDay() + 6) % 7
+let editandoBlocoId = null
+
+try {
+  montarAbas()
+  debug('montarAbas OK')
+} catch (e) { debug('montarAbas erro: ' + e.message) }
+
+try {
+  if (window.pywebview) {
+    carregarPlacar()
+    sincronizarEstado()
+  } else {
+    window.addEventListener('pywebviewready', () => {
+      carregarPlacar()
+      sincronizarEstado()
+    })
+  }
+  debug('pywebview OK')
+} catch (e) { debug('setup erro: ' + e.message) }
+
+debug('Fim init')
+
+document.addEventListener('click', (e) => {
+  const aba = e.target.closest('.estat-aba')
+  if (aba) carregarEstatisticas(aba.dataset.estat)
+})
 const formBloco = document.getElementById('form-bloco')
 const btnCancelarBloco = document.getElementById('btn-cancelar-bloco')
 const seletorModo = document.getElementById('bloco-modo')
 const campoPausa = document.getElementById('campo-pausa')
 const blocoErro = document.getElementById('bloco-erro')
-
-let diaSelecionado = (new Date().getDay() + 6) % 7
-let editandoBlocoId = null
 
 function montarAbas() {
   diasAbas.innerHTML = DIAS.map((nome, i) =>
@@ -306,14 +394,4 @@ formApp.addEventListener('submit', async (evento) => {
   carregarApps()
 })
 
-montarAbas()
 
-if (window.pywebview) {
-  carregarHistorico()
-  sincronizarEstado()
-} else {
-  window.addEventListener('pywebviewready', () => {
-    carregarHistorico()
-    sincronizarEstado()
-  })
-}

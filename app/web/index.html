@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Chrono</title>
+  <link rel="icon" href="LogoC.ico" type="image/x-icon">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -15,6 +16,7 @@
         <button class="nav-item ativo" data-view="inicio">Início</button>
         <button class="nav-item" data-view="agenda">Agenda</button>
         <button class="nav-item" data-view="apps">Apps vigiados</button>
+        <button class="nav-item" data-view="estatisticas">Estatísticas</button>
       </nav>
     </aside>
 
@@ -31,6 +33,27 @@
             </span>
           </button>
 
+          <div class="placar" id="placar">
+            <div class="placar-linha placar-mensagem" id="placar-mensagem"></div>
+
+            <div class="hp-bar">
+              <div class="hp-fill" id="hp-fill"></div>
+              <div class="hp-shield" id="hp-shield"></div>
+              <div class="hp-info" id="hp-info">100 / 100</div>
+            </div>
+
+            <div class="placar-stats">
+              <span>Tarefas: <strong id="placar-tarefas">0</strong></span>
+              <span>Dano: <strong id="placar-dano" class="negativo">0</strong></span>
+            </div>
+
+            <div class="placar-streak">
+              <span>Sequência: <strong id="placar-streak">0</strong> dias</span>
+              <span>Multiplicador: ×<strong id="placar-mult">1.0</strong></span>
+              <span>Recorde: <strong id="placar-recorde">100</strong> HP</span>
+            </div>
+          </div>
+
           <div class="tutorial">
             <h2 class="tutorial-titulo">Como funciona</h2>
             <ol class="tutorial-lista">
@@ -39,11 +62,6 @@
               <li><strong>Ative o Chrono</strong> — ele vigia automaticamente. Nos blocos de foco, se um app proibido abrir, você será cobrado!</li>
             </ol>
           </div>
-
-          <section class="historico">
-            <h2 class="historico-titulo">Sessões de foco</h2>
-            <ul id="lista-sessoes" class="lista-sessoes"></ul>
-          </section>
         </div>
       </section>
 
@@ -135,9 +153,28 @@
           </div>
         </form>
       </section>
+
+      <section class="view" id="view-estatisticas">
+        <header class="view-topo">
+          <h1 class="view-titulo">Estatísticas</h1>
+          <p class="view-descricao">Seu desempenho ao longo do tempo.</p>
+        </header>
+        <div class="estat-abas">
+          <button class="estat-aba ativo" data-estat="semana">Semana</button>
+          <button class="estat-aba" data-estat="horarios">Horários</button>
+          <button class="estat-aba" data-estat="mes">Mês</button>
+        </div>
+        <div class="grafico-container" id="grafico-container">
+          <div class="grafico-eixo-y" id="grafico-eixo-y"></div>
+          <div class="grafico-barras" id="grafico-barras"></div>
+          <div class="grafico-eixo-x" id="grafico-eixo-x"></div>
+        </div>
+        <div class="grafico-total" id="grafico-total"></div>
+      </section>
     </main>
   </div>
 
+  <pre id="debug-log" style="position:fixed;bottom:0;left:0;right:0;max-height:120px;overflow:auto;background:#000;color:#0f0;font:11px monospace;padding:8px;z-index:9999;margin:0;white-space:pre-wrap"></pre>
   <script src="app.js"></script>
 </body>
 </html>
