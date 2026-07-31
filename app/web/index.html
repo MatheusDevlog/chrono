@@ -93,6 +93,15 @@
         <button class="btn-pixel botao-adicionar" id="btn-novo-bloco">+ adicionar bloco</button>
 
         <form class="form-bloco escondido" id="form-bloco">
+          <label class="campo">
+            <span>Modo</span>
+            <select id="bloco-modo">
+              <option value="foco">Foco (vigia e cobra)</option>
+              <option value="pausa">Pausa (esticar o corpo)</option>
+              <option value="livre">Livre (não incomoda)</option>
+            </select>
+          </label>
+
           <div class="campo-linha">
             <label class="campo">
               <span>Início</span>
@@ -109,20 +118,10 @@
             <input type="text" id="bloco-atividade" placeholder="Ex.: Trabalho, Inglês, Almoço" required>
           </label>
 
-          <div class="campo-linha">
-            <label class="campo">
-              <span>Modo</span>
-              <select id="bloco-modo">
-                <option value="foco">Foco (vigia e cobra)</option>
-                <option value="pausa">Pausa (esticar o corpo)</option>
-                <option value="livre">Livre (não incomoda)</option>
-              </select>
-            </label>
-            <label class="campo" id="campo-pausa">
-              <span>Esticar a cada (min)</span>
-              <input type="number" id="bloco-pausa" min="0" step="5" placeholder="opcional">
-            </label>
-          </div>
+          <label class="campo" id="campo-pausa">
+            <span>Esticar a cada (min)</span>
+            <input type="number" id="bloco-pausa" min="0" step="5" placeholder="opcional">
+          </label>
 
           <p class="form-erro escondido" id="bloco-erro">O horário de fim precisa ser depois do início.</p>
 
@@ -147,11 +146,11 @@
         <button class="btn-pixel botao-adicionar" id="btn-novo-app">+ adicionar app</button>
 
         <form class="form-bloco escondido" id="form-app">
-          <label class="campo">
+          <div class="campo combo">
             <span>Nome do Processo (.exe)</span>
-            <input type="text" id="app-processo" list="lista-processos" placeholder="Digite ou selecione na lista..." required>
-            <datalist id="lista-processos"></datalist>
-          </label>
+            <input type="text" id="app-processo" placeholder="Digite ou selecione na lista..." autocomplete="off" required>
+            <ul class="combo-lista escondido" id="lista-processos"></ul>
+          </div>
 
           <label class="campo">
             <span>Apelido</span>

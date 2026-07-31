@@ -344,6 +344,7 @@ async function carregarBlocos() {
 function abrirForm() {
   formBloco.classList.remove('escondido')
   btnNovoBloco.classList.add('escondido')
+  formBloco.scrollIntoView({ behavior: 'smooth', block: 'end' })
 }
 
 function fecharForm() {
@@ -447,14 +448,42 @@ async function carregarApps() {
   })
 }
 
+let processosDisponiveis = []
+const inputProcesso = document.getElementById('app-processo')
+const listaProcessos = document.getElementById('lista-processos')
+
+function mostrarProcessos(filtro = '') {
+  const termo = filtro.trim().toLowerCase()
+  const itens = processosDisponiveis.filter((p) => p.toLowerCase().includes(termo))
+  if (itens.length === 0) {
+    listaProcessos.classList.add('escondido')
+    return
+  }
+  listaProcessos.innerHTML = itens.map((p) => `<li class="combo-item">${p}</li>`).join('')
+  listaProcessos.classList.remove('escondido')
+}
+
+inputProcesso.addEventListener('focus', () => mostrarProcessos(inputProcesso.value))
+inputProcesso.addEventListener('input', () => mostrarProcessos(inputProcesso.value))
+
+listaProcessos.addEventListener('mousedown', (evento) => {
+  const item = evento.target.closest('.combo-item')
+  if (!item) return
+  evento.preventDefault()
+  inputProcesso.value = item.textContent
+  listaProcessos.classList.add('escondido')
+})
+
+document.addEventListener('click', (evento) => {
+  if (!evento.target.closest('.combo')) listaProcessos.classList.add('escondido')
+})
+
 async function abrirFormApp() {
   formApp.classList.remove('escondido')
   btnNovoApp.classList.add('escondido')
 
   if (window.pywebview) {
-    const processos = await window.pywebview.api.listar_processos_abertos()
-    const datalist = document.getElementById('lista-processos')
-    datalist.innerHTML = processos.map(p => `<option value="${p}">`).join('')
+    processosDisponiveis = await window.pywebview.api.listar_processos_abertos()
   }
 }
 
@@ -462,6 +491,7 @@ function fecharFormApp() {
   editandoAppId = null
   formApp.querySelector('button[type="submit"]').textContent = 'Salvar app'
   formApp.reset()
+  listaProcessos.classList.add('escondido')
   formApp.classList.add('escondido')
   btnNovoApp.classList.remove('escondido')
 }

@@ -301,10 +301,10 @@ def iniciar_bandeja():
     bandeja.iniciar(abrir_janela, sair)
 
 
-def tamanho_janela(proporcao=0.65):
+def tamanho_janela(proporcao_largura=0.52, proporcao_altura=0.65):
     tela = webview.screens[0]
-    largura = int(tela.width * proporcao)
-    altura = int(tela.height * proporcao)
+    largura = int(tela.width * proporcao_largura)
+    altura = int(tela.height * proporcao_altura)
     return largura, altura
 
 
@@ -315,7 +315,7 @@ def main():
     apps.criar_tabela()
     pontuacao.criar_tabela()
 
-    largura, altura = tamanho_janela(0.65)
+    largura, altura = tamanho_janela()
 
     janela_principal = webview.create_window(
         'Chrono',
