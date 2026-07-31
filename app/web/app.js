@@ -6,47 +6,49 @@ const MODOS = {
   livre: { rotulo: 'Livre', classe: 'tag-livre' },
 }
 
-try { debug('JS iniciado') } catch (e) {}
-
-function debug(msg) {
-  const el = document.getElementById('debug-log')
-  if (el) el.textContent += '\n' + msg
-  console.log(msg)
-}
-
 const navItens = document.querySelectorAll('.nav-item')
 const views = document.querySelectorAll('.view')
 
 navItens.forEach((item) => {
   item.addEventListener('click', () => {
-    try {
-      const alvo = item.dataset.view
-      navItens.forEach((n) => n.classList.toggle('ativo', n === item))
-      views.forEach((v) => v.classList.toggle('ativa', v.id === `view-${alvo}`))
-      if (alvo === 'inicio') carregarPlacar()
-      if (alvo === 'agenda') carregarBlocos()
-      if (alvo === 'apps') carregarApps()
-      if (alvo === 'estatisticas') carregarEstatisticas('semana')
-    } catch (e) { debug('nav: ' + e.message) }
+    const alvo = item.dataset.view
+    navItens.forEach((n) => n.classList.toggle('ativo', n === item))
+    views.forEach((v) => v.classList.toggle('ativa', v.id === `view-${alvo}`))
+    if (alvo === 'inicio') carregarPlacar()
+    if (alvo === 'agenda') carregarBlocos()
+    if (alvo === 'apps') carregarApps()
+    if (alvo === 'estatisticas') carregarEstatisticas('semana')
   })
 })
 
+const conteudo = document.querySelector('.conteudo')
+let rolarTimer
+conteudo.addEventListener('scroll', () => {
+  conteudo.classList.add('rolando')
+  clearTimeout(rolarTimer)
+  rolarTimer = setTimeout(() => conteudo.classList.remove('rolando'), 800)
+})
+
 const btnAtivar = document.getElementById('btn-ativar')
+const ativarChamada = document.getElementById('ativar-chamada')
+
+function aplicarEstado(ativo) {
+  btnAtivar.classList.toggle('ativado', ativo)
+  btnAtivar.classList.toggle('desativado', !ativo)
+  btnAtivar.querySelector('.ativar-texto').textContent = ativo ? 'CHRONO ATIVO' : 'ATIVAR CHRONO'
+  ativarChamada.classList.toggle('escondido', ativo)
+}
 
 btnAtivar.addEventListener('click', async () => {
   if (!window.pywebview) return
   const ativo = await window.pywebview.api.alternar_chrono()
-  btnAtivar.classList.toggle('ativado', ativo)
-  btnAtivar.classList.toggle('desativado', !ativo)
-  btnAtivar.querySelector('.ativar-texto').textContent = ativo ? 'CHRONO ATIVO' : 'ATIVAR CHRONO'
+  aplicarEstado(ativo)
 })
 
 async function sincronizarEstado() {
   if (!window.pywebview) return
   const ativo = await window.pywebview.api.esta_ativado()
-  btnAtivar.classList.toggle('ativado', ativo)
-  btnAtivar.classList.toggle('desativado', !ativo)
-  btnAtivar.querySelector('.ativar-texto').textContent = ativo ? 'CHRONO ATIVO' : 'ATIVAR CHRONO'
+  aplicarEstado(ativo)
 }
 
 function formatarDuracao(segundos) {
@@ -144,25 +146,17 @@ const btnNovoBloco = document.getElementById('btn-novo-bloco')
 let diaSelecionado = (new Date().getDay() + 6) % 7
 let editandoBlocoId = null
 
-try {
-  montarAbas()
-  debug('montarAbas OK')
-} catch (e) { debug('montarAbas erro: ' + e.message) }
+montarAbas()
 
-try {
-  if (window.pywebview) {
+if (window.pywebview) {
+  carregarPlacar()
+  sincronizarEstado()
+} else {
+  window.addEventListener('pywebviewready', () => {
     carregarPlacar()
     sincronizarEstado()
-  } else {
-    window.addEventListener('pywebviewready', () => {
-      carregarPlacar()
-      sincronizarEstado()
-    })
-  }
-  debug('pywebview OK')
-} catch (e) { debug('setup erro: ' + e.message) }
-
-debug('Fim init')
+  })
+}
 
 document.addEventListener('click', (e) => {
   const aba = e.target.closest('.estat-aba')
