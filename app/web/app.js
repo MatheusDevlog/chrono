@@ -1,4 +1,5 @@
 const DIAS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
+const DIAS_LONGOS = ['Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado', 'Domingo']
 const MODOS = {
   foco: { rotulo: 'Foco', classe: 'tag-foco' },
   pausa: { rotulo: 'Pausa', classe: 'tag-pausa' },
@@ -175,7 +176,7 @@ const blocoErro = document.getElementById('bloco-erro')
 
 function montarAbas() {
   diasAbas.innerHTML = DIAS.map((nome, i) =>
-    `<button class="dia-aba ${i === diaSelecionado ? 'ativo' : ''}" data-dia="${i}">${nome}</button>`
+    `<button class="btn-pixel dia-aba ${i === diaSelecionado ? 'ativo' : ''}" data-dia="${i}">${nome}</button>`
   ).join('')
 
   diasAbas.querySelectorAll('.dia-aba').forEach((aba) => {
@@ -186,6 +187,103 @@ function montarAbas() {
     })
   })
 }
+
+const modalOverlay = document.getElementById('modal-overlay')
+const modalTitulo = document.getElementById('modal-titulo')
+const modalTexto = document.getElementById('modal-texto')
+const modalDias = document.getElementById('modal-dias')
+const modalConfirmar = document.getElementById('modal-confirmar')
+const modalCancelar = document.getElementById('modal-cancelar')
+const btnCopiarDia = document.getElementById('btn-copiar-dia')
+const btnDiaLivre = document.getElementById('btn-dia-livre')
+const btnLimparDia = document.getElementById('btn-limpar-dia')
+
+let modalAoConfirmar = null
+
+function fecharModal() {
+  modalOverlay.classList.add('escondido')
+  modalAoConfirmar = null
+}
+
+function abrirModal({ titulo, texto, comDias, confirmarTexto, aoConfirmar }) {
+  modalTitulo.textContent = titulo
+  modalTexto.innerHTML = texto
+  modalConfirmar.textContent = confirmarTexto || 'Confirmar'
+
+  if (comDias) {
+    modalDias.classList.remove('escondido')
+    modalDias.innerHTML = DIAS
+      .map((nome, i) => (i === diaSelecionado ? '' : `<button type="button" class="modal-dia" data-dia="${i}">${nome}</button>`))
+      .join('')
+    modalDias.querySelectorAll('.modal-dia').forEach((chip) => {
+      chip.addEventListener('click', () => chip.classList.toggle('escolhido'))
+    })
+  } else {
+    modalDias.classList.add('escondido')
+    modalDias.innerHTML = ''
+  }
+
+  modalAoConfirmar = aoConfirmar
+  modalOverlay.classList.remove('escondido')
+}
+
+modalConfirmar.addEventListener('click', () => {
+  if (modalAoConfirmar) modalAoConfirmar()
+})
+modalCancelar.addEventListener('click', fecharModal)
+modalOverlay.addEventListener('click', (evento) => {
+  if (evento.target === modalOverlay) fecharModal()
+})
+
+btnCopiarDia.addEventListener('click', () => {
+  abrirModal({
+    titulo: 'Copiar agenda',
+    texto: `Você está em <strong>${DIAS_LONGOS[diaSelecionado]}</strong>. Para quais dias quer copiar esta agenda? Os blocos dos dias escolhidos serão <strong>substituídos</strong>.`,
+    comDias: true,
+    confirmarTexto: 'Copiar',
+    aoConfirmar: async () => {
+      const escolhidos = [...modalDias.querySelectorAll('.modal-dia.escolhido')].map((chip) => Number(chip.dataset.dia))
+      if (escolhidos.length === 0 || !window.pywebview) return
+      for (const destino of escolhidos) {
+        await window.pywebview.api.copiar_dia(diaSelecionado, destino)
+      }
+      fecharModal()
+      diaSelecionado = escolhidos[0]
+      montarAbas()
+      carregarBlocos()
+    },
+  })
+})
+
+btnDiaLivre.addEventListener('click', () => {
+  abrirModal({
+    titulo: 'Marcar dia livre',
+    texto: `Marcar <strong>${DIAS_LONGOS[diaSelecionado]}</strong> como dia livre? Isso remove todos os blocos deste dia.`,
+    comDias: false,
+    confirmarTexto: 'Marcar livre',
+    aoConfirmar: async () => {
+      if (!window.pywebview) return
+      await window.pywebview.api.marcar_dia_livre(diaSelecionado)
+      fecharModal()
+      carregarBlocos()
+    },
+  })
+})
+
+btnLimparDia.addEventListener('click', () => {
+  abrirModal({
+    titulo: 'Limpar dia',
+    texto: `Remover todos os blocos de <strong>${DIAS_LONGOS[diaSelecionado]}</strong>? O dia ficará vazio.`,
+    comDias: false,
+    confirmarTexto: 'Limpar',
+    aoConfirmar: async () => {
+      if (!window.pywebview) return
+      await window.pywebview.api.limpar_dia(diaSelecionado)
+      fecharModal()
+      carregarBlocos()
+    },
+  })
+})
 
 function formatarBloco(bloco) {
   const modo = MODOS[bloco.modo] || MODOS.livre

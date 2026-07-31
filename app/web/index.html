@@ -75,11 +75,19 @@
           </p>
         </header>
 
-        <div class="dias-abas" id="dias-abas"></div>
+        <div class="agenda-topo">
+          <div class="dias-abas" id="dias-abas"></div>
+          <button class="btn-pixel acao-copiar" id="btn-copiar-dia">+ Copiar</button>
+        </div>
+
+        <div class="agenda-acoes">
+          <button class="btn-pixel acao-livre" id="btn-dia-livre">Dia livre</button>
+          <button class="btn-pixel acao-limpar" id="btn-limpar-dia">Limpar</button>
+        </div>
 
         <ul class="lista-blocos" id="lista-blocos"></ul>
 
-        <button class="botao-principal" id="btn-novo-bloco">+ adicionar bloco</button>
+        <button class="btn-pixel botao-adicionar" id="btn-novo-bloco">+ adicionar bloco</button>
 
         <form class="form-bloco escondido" id="form-bloco">
           <div class="campo-linha">
@@ -133,7 +141,7 @@
 
         <ul class="lista-apps" id="lista-apps"></ul>
 
-        <button class="botao-principal" id="btn-novo-app">+ adicionar app</button>
+        <button class="btn-pixel botao-adicionar" id="btn-novo-app">+ adicionar app</button>
 
         <form class="form-bloco escondido" id="form-app">
           <label class="campo">
@@ -172,6 +180,18 @@
         <div class="grafico-total" id="grafico-total"></div>
       </section>
     </main>
+  </div>
+
+  <div class="modal-overlay escondido" id="modal-overlay">
+    <div class="modal-caixa">
+      <h2 class="modal-titulo" id="modal-titulo"></h2>
+      <p class="modal-texto" id="modal-texto"></p>
+      <div class="modal-dias escondido" id="modal-dias"></div>
+      <div class="modal-acoes">
+        <button class="botao-secundario" id="modal-cancelar">Cancelar</button>
+        <button class="botao-principal" id="modal-confirmar">Confirmar</button>
+      </div>
+    </div>
   </div>
 
   <pre id="debug-log" style="position:fixed;bottom:0;left:0;right:0;max-height:120px;overflow:auto;background:#000;color:#0f0;font:11px monospace;padding:8px;z-index:9999;margin:0;white-space:pre-wrap"></pre>

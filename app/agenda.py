@@ -72,6 +72,42 @@ def editar_bloco(id_bloco, dia_semana, hora_inicio, hora_fim, atividade, modo, p
     conexao.close()
 
 
+def copiar_dia(origem, destino):
+    blocos = listar_blocos(origem)
+    conexao = conectar()
+    conexao.execute("DELETE FROM blocos_rotina WHERE dia_semana = ?", (destino,))
+    for bloco in blocos:
+        conexao.execute(
+            "INSERT INTO blocos_rotina "
+            "(dia_semana, hora_inicio, hora_fim, atividade, modo, pausa_intervalo_min) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            (destino, bloco["hora_inicio"], bloco["hora_fim"], bloco["atividade"],
+             bloco["modo"], bloco["pausa_intervalo_min"]),
+        )
+    conexao.commit()
+    conexao.close()
+
+
+def limpar_dia(dia_semana):
+    conexao = conectar()
+    conexao.execute("DELETE FROM blocos_rotina WHERE dia_semana = ?", (dia_semana,))
+    conexao.commit()
+    conexao.close()
+
+
+def marcar_dia_livre(dia_semana):
+    conexao = conectar()
+    conexao.execute("DELETE FROM blocos_rotina WHERE dia_semana = ?", (dia_semana,))
+    conexao.execute(
+        "INSERT INTO blocos_rotina "
+        "(dia_semana, hora_inicio, hora_fim, atividade, modo, pausa_intervalo_min) "
+        "VALUES (?, ?, ?, ?, ?, ?)",
+        (dia_semana, "00:00", "23:59", "Dia livre", "livre", None),
+    )
+    conexao.commit()
+    conexao.close()
+
+
 def obter_bloco_atual(dia_semana=None, hora_str=None):
     if dia_semana is None or hora_str is None:
         agora = datetime.datetime.now()
