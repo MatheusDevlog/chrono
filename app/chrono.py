@@ -159,6 +159,15 @@ class API:
     def editar_bloco(self, id_bloco, dia_semana, hora_inicio, hora_fim, atividade, modo, pausa_intervalo_min):
         agenda.editar_bloco(id_bloco, dia_semana, hora_inicio, hora_fim, atividade, modo, pausa_intervalo_min)
 
+    def copiar_dia(self, origem, destino):
+        agenda.copiar_dia(origem, destino)
+
+    def marcar_dia_livre(self, dia_semana):
+        agenda.marcar_dia_livre(dia_semana)
+
+    def limpar_dia(self, dia_semana):
+        agenda.limpar_dia(dia_semana)
+
     def listar_apps(self):
         return apps.listar_apps()
 
