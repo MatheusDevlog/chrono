@@ -56,14 +56,61 @@ def rodar(comando, descricao):
         abortar(f'Falhou: {descricao}')
 
 
+def aplicar_notas_hibridas(versao, arquivo_notas):
+    repo = subprocess.run(
+        ['gh', 'repo', 'view', '--json', 'nameWithOwner', '-q', '.nameWithOwner'],
+        cwd=PASTA, capture_output=True, text=True,
+    )
+    if repo.returncode != 0 or not repo.stdout.strip():
+        print('[aviso] nao detectei o repo; a release ficou so com o resumo humano.')
+        return
+
+    gerado = subprocess.run(
+        ['gh', 'api', '--method', 'POST',
+         f'repos/{repo.stdout.strip()}/releases/generate-notes',
+         '-f', f'tag_name=v{versao}', '--jq', '.body'],
+        cwd=PASTA, capture_output=True, text=True,
+    )
+    if gerado.returncode != 0 or not gerado.stdout.strip():
+        print('[aviso] nao gerei o changelog automatico; a release ficou so com o resumo humano.')
+        return
+
+    with open(arquivo_notas, encoding='utf-8') as arquivo:
+        humano = arquivo.read().strip()
+    combinado = humano + '\n\n---\n\n' + gerado.stdout.strip()
+
+    destino = os.path.join(PASTA, 'Output', '_release_notes.md')
+    with open(destino, 'w', encoding='utf-8') as arquivo:
+        arquivo.write(combinado)
+
+    print('\n>>> Aplicando notas hibridas (resumo + changelog automatico)')
+    edit = subprocess.run(
+        ['gh', 'release', 'edit', f'v{versao}', '--notes-file', destino], cwd=PASTA,
+    )
+    if edit.returncode != 0:
+        print('[aviso] falhou ao aplicar as notas hibridas; a release ficou com o resumo humano.')
+
+
 def main():
-    args = [a for a in sys.argv[1:] if not a.startswith('--')]
-    publicar = '--no-release' not in sys.argv[1:]
+    argv = sys.argv[1:]
+    publicar = '--no-release' not in argv
 
-    if len(args) != 1 or not re.fullmatch(r'\d+\.\d+\.\d+', args[0]):
-        abortar('Uso: python release.py <versao X.Y.Z> [--no-release]')
+    arquivo_notas = None
+    if '--notas' in argv:
+        i = argv.index('--notas')
+        if i + 1 >= len(argv):
+            abortar('--notas exige o caminho de um arquivo .md')
+        arquivo_notas = argv[i + 1]
+        del argv[i:i + 2]
 
-    versao = args[0]
+    posicionais = [a for a in argv if not a.startswith('--')]
+    if len(posicionais) != 1 or not re.fullmatch(r'\d+\.\d+\.\d+', posicionais[0]):
+        abortar('Uso: python release.py <versao X.Y.Z> [--notas notas.md] [--no-release]')
+
+    if arquivo_notas and not os.path.exists(arquivo_notas):
+        abortar(f'Arquivo de notas nao encontrado: {arquivo_notas}')
+
+    versao = posicionais[0]
     print(f'=== Release do Chrono {versao} ===')
 
     gravar_versao(versao)
@@ -84,14 +131,19 @@ def main():
         print('     (--no-release: pulei a publicacao no GitHub)')
         return
 
-    rodar(
-        [
-            'gh', 'release', 'create', f'v{versao}', INSTALADOR,
-            '--title', f'Chrono {versao}',
-            '--generate-notes',
-        ],
-        '[4/4] Publicando a release no GitHub (gh)',
-    )
+    if arquivo_notas:
+        rodar(
+            ['gh', 'release', 'create', f'v{versao}', INSTALADOR,
+             '--title', f'Chrono {versao}', '--notes-file', arquivo_notas],
+            '[4/4] Publicando a release no GitHub (gh)',
+        )
+        aplicar_notas_hibridas(versao, arquivo_notas)
+    else:
+        rodar(
+            ['gh', 'release', 'create', f'v{versao}', INSTALADOR,
+             '--title', f'Chrono {versao}', '--generate-notes'],
+            '[4/4] Publicando a release no GitHub (gh)',
+        )
 
     print(f'\n[OK] Chrono {versao} publicado!')
     print(f'     Instalador: {INSTALADOR}')
