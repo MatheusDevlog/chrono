@@ -92,25 +92,31 @@ python chrono.py
 
 ---
 
-## Como gerar o instalador (para desenvolvedores)
+## Como lançar uma versão (para desenvolvedores)
 
-### 1. Gerar o executável com PyInstaller
+### Fluxo automatizado (um comando)
+Com o **Inno Setup** instalado e o **GitHub CLI** (`gh`) autenticado:
+
 ```powershell
 cd app
-pyinstaller Chrono.spec
+.\.venv\Scripts\python.exe release.py 1.1.0
 ```
-Isso cria `dist/Chrono/Chrono.exe` com todos os arquivos da `web/` (incluindo `web/fonts/`) embarcados.
 
-### 2. Criar o instalador `.exe` com Inno Setup
-1. Instale o **Inno Setup Compiler** (jrsoftware.org/isdl.php)
-2. Abra o programa → `File → Open` → selecione `app/chrono.iss`
-3. Clique em **Compile** (ou `Ctrl+F9`)
-4. O instalador final sai em `app/Output/chrono-setup.exe`
+O `release.py` faz tudo de ponta a ponta:
+1. Grava a versão em `version.py` e `chrono.iss`.
+2. Gera o executável com o **PyInstaller** (`Chrono.spec`).
+3. Compila o instalador com o **Inno Setup** (`ISCC.exe`, sem abrir a GUI).
+4. Cria a release `vX.Y.Z` no GitHub e sobe o `chrono-setup.exe`.
 
-> O script `chrono.iss` já está configurado para:
-> - Instalar na pasta do usuário (sem pedir admin)
-> - Criar atalhos no Menu Iniciar e Desktop (opcional)
-> - Usar o ícone oficial `LogoC.ico`
+> Use `python release.py 1.1.0 --no-release` para apenas gerar o
+> `app/Output/chrono-setup.exe` localmente, sem publicar.
+
+### Passos manuais (fallback)
+1. `cd app && pyinstaller Chrono.spec` → cria `dist/Chrono/Chrono.exe`.
+2. Abra o **Inno Setup Compiler**, `File → Open` → `app/chrono.iss` → **Compile** (`Ctrl+F9`).
+3. O instalador sai em `app/Output/chrono-setup.exe`.
+
+> O `chrono.iss` já instala na pasta do usuário (sem admin), cria atalhos e usa o ícone `LogoC.ico`.
 
 ---
 

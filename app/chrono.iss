@@ -1,8 +1,10 @@
+#define MyAppVersion "1.1.0"
+
 [Setup]
 AppId={{6751403F-1DBA-4FA7-B04B-AEDA130215C3}
 AppName=Chrono
-AppVersion=1.0.0
-AppVerName=Chrono 1.0.0
+AppVersion={#MyAppVersion}
+AppVerName=Chrono {#MyAppVersion}
 AppPublisher=Matheus Santos Cunha
 AppPublisherURL=https://github.com/MatheusDevlog/chrono
 DefaultDirName={autopf}\Chrono
@@ -15,7 +17,7 @@ WizardStyle=modern
 SetupIconFile=LogoC.ico
 UninstallDisplayIcon={app}\Chrono.exe
 UninstallDisplayName=Chrono
-VersionInfoVersion=1.0.0
+VersionInfoVersion={#MyAppVersion}
 
 [Tasks]
 Name: "desktopicon"; Description: "Criar atalho na area de trabalho"; GroupDescription: "Atalhos:"

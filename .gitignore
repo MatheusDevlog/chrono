@@ -28,3 +28,5 @@ build/
 dist/
 Output/
 *.spec
+# ...menos o Chrono.spec, que é config de build (versionada de propósito)
+!app/Chrono.spec
