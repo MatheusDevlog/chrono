@@ -11,6 +11,15 @@ O nome é uma homenagem ao **Chrono Trigger** e à ideia de **tempo** bem usado.
 
 ---
 
+## Instalação (Windows)
+
+1. Acesse a página de **[Releases](https://github.com/MatheusDevlog/chrono/releases)**.
+2. Baixe o `chrono-setup.exe` da versão mais recente.
+3. Execute o instalador (não precisa de admin) e siga o assistente.
+4. Pronto: o Chrono fica na bandeja, perto do relógio.
+
+---
+
 ## A ideia
 
 Sou do tipo que passa o dia todo no computador. O Chrono nasce pra ajudar a
@@ -53,8 +62,7 @@ Tema **dark teal** inspirado na paleta do **Chrono Trigger**.
 | Carmesim | `#C42E4C` | Bloqueado / erro |
 | Ciano | `#57C4E6` | Foco / info |
 
-**Fontes:** Press Start 2P (logo) · Pixelify Sans (títulos) · Rubik (interface) ·
-VT323 (cronômetro).
+**Fontes:** Press Start 2P (títulos e logo) · Rubik (interface).
 
 ---
 
@@ -63,7 +71,7 @@ VT323 (cronômetro).
 - [x] Painel inicial com botão **Ativar/Desativar** e tutorial interativo
 - [x] **Agenda semanal** (Seg–Dom) com blocos de Foco / Pausa / Livre
 - [x] **Apps vigiados** com seletor de processos visíveis do Windows
-- [x] **Estatísticas** em 3 abas: Semana, Horários (Manhã/Tarde/Noite/Madrugada), Mês
+- [x] **Estatísticas gamificadas** num painel único: HP do dia (herói + selo "vs ontem"), ranking **Você vs Você** dos últimos 6 dias, métricas do período e gráfico com abas **Hoje / Semana / Mês**
 - [x] Sistema de **HP / Shield / Streak** com multiplicador progressivo
 - [x] Pop-up de cobrança "por cima de tudo" (Concluir / Ignorar / Soneca)
 - [x] Histórico de sessões de foco salvo em SQLite
@@ -91,7 +99,7 @@ python chrono.py
 cd app
 pyinstaller Chrono.spec
 ```
-Isso cria `dist/Chrono/Chrono.exe` com todos os arquivos da `web/` e `fonts/` embarcados.
+Isso cria `dist/Chrono/Chrono.exe` com todos os arquivos da `web/` (incluindo `web/fonts/`) embarcados.
 
 ### 2. Criar o instalador `.exe` com Inno Setup
 1. Instale o **Inno Setup Compiler** (jrsoftware.org/isdl.php)
@@ -120,13 +128,13 @@ chrono/
 │   ├── agenda.py          # CRUD blocos da semana
 │   ├── apps.py            # CRUD apps vigiados
 │   ├── pontuacao.py       # HP, Shield, Streak, Stats
-│   ├── web/
-│   │   ├── index.html     # Dashboard principal
-│   │   ├── cobranca.html  # Pop-up de cobrança
-│   │   ├── app.js         # Lógica front-end
-│   │   ├── style.css      # Estilos (tema dark teal)
-│   │   └── LogoC.ico      # Ícone oficial (tray + favicon)
-│   └── fonts/             # PressStart2P, Rubik, Pixelify, VT323
+│   └── web/
+│       ├── index.html     # Dashboard principal
+│       ├── cobranca.html  # Pop-up de cobrança
+│       ├── app.js         # Lógica front-end
+│       ├── style.css      # Estilos (tema dark teal)
+│       ├── LogoC.ico      # Ícone oficial (tray + favicon)
+│       └── fonts/         # PressStart2P, Rubik
 └── README.md
 ```
 

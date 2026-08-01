@@ -1,7 +1,10 @@
 [Setup]
+AppId={{6751403F-1DBA-4FA7-B04B-AEDA130215C3}
 AppName=Chrono
 AppVersion=1.0.0
-AppPublisher=Matheus
+AppVerName=Chrono 1.0.0
+AppPublisher=Matheus Santos Cunha
+AppPublisherURL=https://github.com/MatheusDevlog/chrono
 DefaultDirName={autopf}\Chrono
 DisableProgramGroupPage=yes
 OutputBaseFilename=chrono-setup
@@ -10,6 +13,9 @@ SolidCompression=yes
 PrivilegesRequired=lowest
 WizardStyle=modern
 SetupIconFile=LogoC.ico
+UninstallDisplayIcon={app}\Chrono.exe
+UninstallDisplayName=Chrono
+VersionInfoVersion=1.0.0
 
 [Tasks]
 Name: "desktopicon"; Description: "Criar atalho na area de trabalho"; GroupDescription: "Atalhos:"
