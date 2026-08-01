@@ -108,8 +108,13 @@ O `release.py` faz tudo de ponta a ponta:
 3. Compila o instalador com o **Inno Setup** (`ISCC.exe`, sem abrir a GUI).
 4. Cria a release `vX.Y.Z` no GitHub e sobe o `chrono-setup.exe`.
 
-> Use `python release.py 1.1.0 --no-release` para apenas gerar o
-> `app/Output/chrono-setup.exe` localmente, sem publicar.
+**Opções:**
+- `--notas notas.md` — publica com uma descrição **híbrida**: o seu resumo (do arquivo
+  `.md`) no topo + o changelog automático do GitHub embaixo. Ex.:
+  `python release.py 1.2.0 --notas notas.md`
+- `--no-release` — apenas gera o `app/Output/chrono-setup.exe` localmente, sem publicar.
+
+Sem `--notas`, a release usa o changelog automático do GitHub.
 
 ### Passos manuais (fallback)
 1. `cd app && pyinstaller Chrono.spec` → cria `dist/Chrono/Chrono.exe`.
