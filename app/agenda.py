@@ -21,7 +21,20 @@ def criar_tabela():
     conexao.close()
 
 
+def bloco_em_conflito(dia_semana, hora_inicio, hora_fim, ignorar_id=None):
+    for bloco in listar_blocos(dia_semana):
+        if ignorar_id is not None and bloco["id"] == ignorar_id:
+            continue
+        if hora_inicio < bloco["hora_fim"] and bloco["hora_inicio"] < hora_fim:
+            return bloco
+    return None
+
+
 def salvar_bloco(dia_semana, hora_inicio, hora_fim, atividade, modo, pausa_intervalo_min=None):
+    conflito = bloco_em_conflito(dia_semana, hora_inicio, hora_fim)
+    if conflito:
+        return {"ok": False, "conflito": conflito}
+
     conexao = conectar()
     conexao.execute(
         "INSERT INTO blocos_rotina "
@@ -31,6 +44,7 @@ def salvar_bloco(dia_semana, hora_inicio, hora_fim, atividade, modo, pausa_inter
     )
     conexao.commit()
     conexao.close()
+    return {"ok": True}
 
 
 def listar_blocos(dia_semana=None):
@@ -61,6 +75,10 @@ def remover_bloco(id_bloco):
     conexao.close()
 
 def editar_bloco(id_bloco, dia_semana, hora_inicio, hora_fim, atividade, modo, pausa_intervalo_min=None):
+    conflito = bloco_em_conflito(dia_semana, hora_inicio, hora_fim, ignorar_id=id_bloco)
+    if conflito:
+        return {"ok": False, "conflito": conflito}
+
     conexao = conectar()
     conexao.execute(
         "UPDATE blocos_rotina "
@@ -70,6 +88,7 @@ def editar_bloco(id_bloco, dia_semana, hora_inicio, hora_fim, atividade, modo, p
     )
     conexao.commit()
     conexao.close()
+    return {"ok": True}
 
 
 def copiar_dia(origem, destino):

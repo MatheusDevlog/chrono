@@ -448,16 +448,22 @@ formBloco.addEventListener('submit', async (evento) => {
   const pausa = modo === 'foco' && pausaTexto ? Number(pausaTexto) : null
 
   if (fim <= inicio) {
+    blocoErro.textContent = 'O horário de fim precisa ser depois do início.'
     blocoErro.classList.remove('escondido')
     return
   }
 
-  if (editandoBlocoId) {
-    await window.pywebview.api.editar_bloco(editandoBlocoId, diaSelecionado, inicio, fim, atividade, modo, pausa)
-  } else {
-    await window.pywebview.api.salvar_bloco(diaSelecionado, inicio, fim, atividade, modo, pausa)
+  const resultado = editandoBlocoId
+    ? await window.pywebview.api.editar_bloco(editandoBlocoId, diaSelecionado, inicio, fim, atividade, modo, pausa)
+    : await window.pywebview.api.salvar_bloco(diaSelecionado, inicio, fim, atividade, modo, pausa)
+
+  if (resultado && resultado.ok === false) {
+    const c = resultado.conflito
+    blocoErro.textContent = `Conflito de horário: já existe "${c.atividade}" das ${c.hora_inicio} às ${c.hora_fim} nesse dia. Ajuste para não sobrepor.`
+    blocoErro.classList.remove('escondido')
+    return
   }
-  
+
   fecharForm()
   carregarBlocos()
 })

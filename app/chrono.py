@@ -261,13 +261,13 @@ class API:
         return agenda.obter_bloco_atual()
 
     def salvar_bloco(self, dia_semana, hora_inicio, hora_fim, atividade, modo, pausa_intervalo_min):
-        agenda.salvar_bloco(dia_semana, hora_inicio, hora_fim, atividade, modo, pausa_intervalo_min)
+        return agenda.salvar_bloco(dia_semana, hora_inicio, hora_fim, atividade, modo, pausa_intervalo_min)
 
     def remover_bloco(self, id_bloco):
         agenda.remover_bloco(id_bloco)
 
     def editar_bloco(self, id_bloco, dia_semana, hora_inicio, hora_fim, atividade, modo, pausa_intervalo_min):
-        agenda.editar_bloco(id_bloco, dia_semana, hora_inicio, hora_fim, atividade, modo, pausa_intervalo_min)
+        return agenda.editar_bloco(id_bloco, dia_semana, hora_inicio, hora_fim, atividade, modo, pausa_intervalo_min)
 
     def copiar_dia(self, origem, destino):
         agenda.copiar_dia(origem, destino)
