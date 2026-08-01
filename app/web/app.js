@@ -17,7 +17,7 @@ navItens.forEach((item) => {
     if (alvo === 'inicio') carregarPlacar()
     if (alvo === 'agenda') carregarBlocos()
     if (alvo === 'apps') carregarApps()
-    if (alvo === 'estatisticas') carregarEstatisticas('semana')
+    if (alvo === 'estatisticas') carregarEstatisticas('hoje')
   })
 })
 
@@ -90,7 +90,17 @@ async function carregarPlacar() {
   document.getElementById('placar-mensagem').textContent = r.mensagem
 }
 
-let estatTipoAtual = 'semana'
+let estatTipoAtual = 'hoje'
+
+const ESTAT_ESTRELA = '<svg width="14" height="14" viewBox="0 0 7 7" fill="#F3C24B"><rect x="3" y="0" width="1" height="7"/><rect x="0" y="3" width="7" height="1"/><rect x="2" y="1" width="3" height="5"/><rect x="1" y="2" width="5" height="3"/></svg>'
+const ESTAT_ESCUDO = '<svg width="14" height="16" viewBox="0 0 7 8" fill="currentColor"><rect x="0" y="0" width="7" height="1"/><rect x="0" y="1" width="7" height="4"/><rect x="1" y="5" width="5" height="1"/><rect x="2" y="6" width="3" height="1"/><rect x="3" y="7" width="1" height="1"/></svg>'
+
+function corHp(v) {
+  if (v > 75) return '#10B981'
+  if (v > 40) return '#F39A1F'
+  if (v <= 0) return '#2C625B'
+  return '#C42E4C'
+}
 
 async function carregarEstatisticas(tipo) {
   if (!window.pywebview) return
@@ -100,43 +110,105 @@ async function carregarEstatisticas(tipo) {
     a.classList.toggle('ativo', a.dataset.estat === estatTipoAtual)
   )
 
-  const data = await window.pywebview.api.obter_estatisticas(estatTipoAtual)
-  desenharGrafico(data)
+  const dados = await window.pywebview.api.obter_estatisticas_completas(estatTipoAtual)
+  desenharHeroi(dados.hero)
+  desenharRanking(dados.ranking)
+  desenharPeriodo(dados.periodo)
 }
 
-function desenharGrafico(data) {
-  const totalEl = document.getElementById('grafico-total')
-  const { rotulos, dados } = data
+function desenharHeroi(h) {
+  document.getElementById('estat-hp').textContent = h.hp
 
-  const hpValores = dados.map(v => Math.max(0, Math.min(150, 100 + v)))
-  const max = Math.max(...hpValores, 1)
+  const fill = document.getElementById('estat-hpfill')
+  fill.style.width = Math.min(100, h.hp) + '%'
+  fill.style.background = corHp(h.hp)
 
-  const passos = 4
-  const passoValor = Math.ceil(max / passos)
-  const eixoY = Array.from({ length: passos + 1 }, (_, i) => i * passoValor)
+  const shield = document.getElementById('estat-hpshield')
+  shield.style.left = Math.min(100, h.hp) + '%'
+  shield.style.width = Math.min(50, h.shield) + '%'
 
-  document.getElementById('grafico-eixo-y').innerHTML = eixoY.map((v) =>
-    `<span>${v}</span>`
-  ).join('')
+  document.getElementById('estat-escudo').innerHTML =
+    h.shield > 0 ? `${ESTAT_ESCUDO} +${h.shield} escudo` : ''
 
-  const barrasHtml = hpValores.map((valor, i) => {
-    const altura = max > 0 ? Math.round((valor / max) * 120) : 0
-    const cor = valor > 75 ? '#10B981' : valor > 40 ? '#EAB308' : '#C42E4C'
+  const selo = document.getElementById('estat-selo')
+  selo.classList.remove('baixo', 'neutro')
+  if (h.vs_ontem > 0) {
+    selo.textContent = `▲ +${h.vs_ontem} vs ontem`
+  } else if (h.vs_ontem < 0) {
+    selo.textContent = `▼ ${h.vs_ontem} vs ontem`
+    selo.classList.add('baixo')
+  } else {
+    selo.textContent = 'igual a ontem'
+    selo.classList.add('neutro')
+  }
+
+  document.getElementById('estat-herostats').innerHTML =
+    `<span>Tarefas: <b>${h.tarefas}</b></span>` +
+    `<span class="dano">Dano: <b>${h.dano}</b></span>` +
+    `<span>Sequência: <b>${h.streak} dias</b> &middot; &times;${h.multiplicador.toFixed(1)}</span>`
+
+  document.getElementById('estat-msg').textContent = `"${h.mensagem}"`
+}
+
+function desenharRanking(ranking) {
+  const ordenado = ranking
+    .map((x, i) => ({ ...x, ordem: i }))
+    .sort((a, b) => b.valor - a.valor || a.ordem - b.ordem)
+
+  document.getElementById('estat-ranking').innerHTML = ordenado.map((x, i) => {
+    const pos = i + 1
+    const classeMedalha = pos <= 3 ? `m${pos}` : 'mn'
     return `
-      <div class="barra-coluna">
-        <span class="barra-valor">${valor}</span>
-        <div class="barra-preenchimento" style="height:${Math.max(altura, 4)}px;background:${cor}"></div>
+      <div class="rk-linha">
+        <span class="rk-nome"><span class="medalha ${classeMedalha}">${pos}</span> ${x.nome}</span>
+        <span class="rk-barra"><span class="rk-preench" style="width:${x.valor}%;background:${corHp(x.valor)}"></span></span>
+        <span class="rk-valor">${x.valor}</span>
       </div>`
   }).join('')
+}
 
-  document.getElementById('grafico-barras').innerHTML = barrasHtml
+function desenharPeriodo(p) {
+  document.getElementById('estat-periodo').textContent = p.label
 
-  document.getElementById('grafico-eixo-x').innerHTML = rotulos.map((r) =>
-    `<span>${r}</span>`
-  ).join('')
+  const m = p.metricas
+  const cards = [
+    { r: 'Média de HP', v: m.media_hp, e: 'no período', cls: 'destaque' },
+    m.melhor_dia
+      ? { r: 'Melhor dia', v: m.melhor_dia.valor, e: m.melhor_dia.quando }
+      : { r: 'Melhor dia', v: '—', e: 'sem dados' },
+  ]
+  if (estatTipoAtual !== 'hoje') {
+    cards.push({ r: 'Dias perfeitos', v: m.dias_perfeitos, e: 'sem sofrer dano', star: true, cls: 'ouro' })
+  }
+  cards.push(
+    { r: 'Sessões de foco', v: m.sessoes_foco, e: 'blocos concluídos' },
+    { r: 'Dano total', v: m.dano_total, e: 'no período', cls: 'perigo' },
+  )
+  document.getElementById('estat-metricas').innerHTML = cards.map((c) => `
+    <div class="metrica ${c.cls || ''}">
+      <span class="metrica-rotulo">${c.r}</span>
+      <span class="metrica-valor">${c.v}${c.star ? ESTAT_ESTRELA : ''}</span>
+      <span class="metrica-extra">${c.e}</span>
+    </div>`).join('')
 
-  const media = Math.round(hpValores.reduce((a, b) => a + b, 0) / hpValores.length)
-  totalEl.innerHTML = `Média: <strong>${media}</strong> HP`
+  const g = p.grafico
+  document.getElementById('estat-grafico-titulo').textContent = g.titulo
+  document.getElementById('estat-legenda').textContent = g.legenda
+
+  const escala = g.modo === 'hp' ? 100 : Math.max(...g.valores.map((v) => Math.abs(v)), 1)
+  document.getElementById('estat-eixoy').innerHTML = g.modo === 'hp'
+    ? '<span>100</span><span>50</span><span>0</span>'
+    : `<span>${escala}</span><span>${Math.round(escala / 2)}</span><span>0</span>`
+
+  document.getElementById('estat-barras').innerHTML = g.valores.map((v, i) => {
+    const altura = Math.round((Math.abs(v) / escala) * 100)
+    const cor = g.modo === 'hp' ? corHp(v) : (v > 0 ? '#10B981' : v < 0 ? '#C42E4C' : '#2C625B')
+    return `
+      <div class="col">
+        <div class="col-barra" style="height:${Math.max(altura, 2)}%;background:${cor}"></div>
+        <span class="col-label">${g.labels[i]}</span>
+      </div>`
+  }).join('')
 }
 
 const diasAbas = document.getElementById('dias-abas')

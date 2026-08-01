@@ -118,28 +118,112 @@ class API:
     def obter_ranking(self):
         return pontuacao.montar_ranking()
 
-    def obter_estatisticas(self, tipo):
+    def obter_estatisticas_completas(self, tipo):
+        dias_longos = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo']
+        dias_curtos = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
         hoje = datetime.date.today()
-        if tipo == 'semana':
+        ontem = hoje - datetime.timedelta(days=1)
+
+        ranking_base = pontuacao.montar_ranking()
+        hoje_hp = ranking_base['hp']
+        ontem_hp = pontuacao.hp_dia_simples(ontem.isoformat())
+
+        hero = {
+            'hp': hoje_hp,
+            'shield': ranking_base['shield'],
+            'max': 100,
+            'tarefas': ranking_base['tarefas'],
+            'dano': ranking_base['dano'],
+            'streak': ranking_base['streak_atual'],
+            'multiplicador': ranking_base['multiplicador'],
+            'mensagem': ranking_base['mensagem'],
+            'vs_ontem': hoje_hp - ontem_hp,
+        }
+
+        ranking = []
+        for i, drec in enumerate(pontuacao.ranking_recente(6)):
+            dt = datetime.date.fromisoformat(drec['data'])
+            if i == 0:
+                nome = 'Hoje'
+            elif i == 1:
+                nome = 'Ontem'
+            else:
+                nome = dias_curtos[dt.weekday()]
+            ranking.append({'nome': nome, 'valor': drec['hp']})
+
+        if tipo == 'hoje':
+            inicio = fim = hoje
+            faixas = pontuacao.pontos_por_faixa_horario(hoje.isoformat(), hoje.isoformat())
+            grafico = {
+                'titulo': 'Hoje por período do dia',
+                'legenda': 'Quanto você produziu em cada parte do dia de hoje.',
+                'labels': ['Manhã', 'Tarde', 'Noite', 'Madr.'],
+                'valores': [faixas['manha'], faixas['tarde'], faixas['noite'], faixas['madrugada']],
+                'modo': 'pontos',
+            }
+        elif tipo == 'mes':
+            inicio = hoje.replace(day=1)
+            fim = (inicio + datetime.timedelta(days=32)).replace(day=1) - datetime.timedelta(days=1)
+            dias = pontuacao.hp_por_dia(inicio.isoformat(), fim.isoformat())
+            labels = []
+            valores = []
+            ini_semana = inicio
+            while ini_semana <= fim:
+                fim_semana = min(ini_semana + datetime.timedelta(days=6), fim)
+                labels.append(f'{ini_semana.day}–{fim_semana.day}')
+                hps = [
+                    d['hp'] for d in dias
+                    if d['atividade'] and ini_semana.isoformat() <= d['data'] <= fim_semana.isoformat()
+                ]
+                valores.append(round(sum(hps) / len(hps)) if hps else 0)
+                ini_semana = fim_semana + datetime.timedelta(days=1)
+            nome_mes = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
+                        'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'][hoje.month - 1]
+            grafico = {
+                'titulo': 'Média de HP por semana',
+                'legenda': f'Cada barra é uma semana de {nome_mes} (os números são os dias do mês).',
+                'labels': labels,
+                'valores': valores,
+                'modo': 'hp',
+            }
+        else:
             inicio = hoje - datetime.timedelta(days=hoje.weekday())
             fim = inicio + datetime.timedelta(days=6)
-            dados = pontuacao.pontos_por_dia_semana(inicio.isoformat(), fim.isoformat())
-            rotulos = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
-            return {'rotulos': rotulos, 'dados': dados}
-        if tipo == 'horarios':
-            inicio = hoje.replace(day=1)
-            fim = (inicio + datetime.timedelta(days=32)).replace(day=1) - datetime.timedelta(days=1)
-            faixas = pontuacao.pontos_por_faixa_horario(inicio.isoformat(), fim.isoformat())
-            return {
-                'rotulos': ['Manhã', 'Tarde', 'Noite', 'Madrugada'],
-                'dados': [faixas['manha'], faixas['tarde'], faixas['noite'], faixas['madrugada']],
+            dias = pontuacao.hp_por_dia(inicio.isoformat(), fim.isoformat())
+            grafico = {
+                'titulo': 'HP ao terminar cada dia',
+                'legenda': 'Cada barra = o HP com que você terminou o dia. Verde bom, amarelo atenção, vermelho dia difícil.',
+                'labels': ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+                'valores': [d['hp'] for d in dias],
+                'modo': 'hp',
             }
-        if tipo == 'mes':
-            inicio = hoje.replace(day=1)
-            fim = (inicio + datetime.timedelta(days=32)).replace(day=1) - datetime.timedelta(days=1)
-            dados = pontuacao.pontos_por_semana_mes(inicio.isoformat(), fim.isoformat())
-            return {'rotulos': ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'], 'dados': dados}
-        return {'rotulos': [], 'dados': []}
+
+        melhor = pontuacao.melhor_hp_dia(inicio.isoformat(), fim.isoformat())
+        if melhor:
+            md = datetime.date.fromisoformat(melhor['data'])
+            if tipo == 'hoje':
+                quando = 'hoje'
+            elif tipo == 'mes':
+                quando = f'dia {md.day}'
+            else:
+                quando = dias_longos[md.weekday()]
+            melhor_dia = {'valor': melhor['valor'], 'quando': quando}
+        else:
+            melhor_dia = None
+
+        periodo = {
+            'label': {'hoje': 'Hoje', 'semana': 'Semana', 'mes': 'Mês'}[tipo],
+            'metricas': {
+                'media_hp': pontuacao.media_hp(inicio.isoformat(), fim.isoformat()),
+                'melhor_dia': melhor_dia,
+                'dias_perfeitos': pontuacao.dias_perfeitos(inicio.isoformat(), fim.isoformat()),
+                'sessoes_foco': pontuacao.sessoes_foco(inicio.isoformat(), fim.isoformat()),
+                'dano_total': pontuacao.dano_total(inicio.isoformat(), fim.isoformat()),
+            },
+            'grafico': grafico,
+        }
+
+        return {'hero': hero, 'ranking': ranking, 'periodo': periodo}
 
     def listar_sessoes(self):
         return banco.listar_sessoes(10)
