@@ -1,6 +1,8 @@
 import os
 import sys
 import time
+import ctypes
+import logging
 import threading
 import datetime
 import psutil
@@ -13,6 +15,30 @@ import bandeja
 import pontuacao
 
 INTERVALO = 5
+
+os.makedirs(banco.PASTA_DADOS, exist_ok=True)
+logging.basicConfig(
+    filename=os.path.join(banco.PASTA_DADOS, 'erro.log'),
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(message)s',
+)
+
+
+def _registrar_excecao(exc_type, exc_value, exc_tb):
+    logging.error('Erro nao tratado', exc_info=(exc_type, exc_value, exc_tb))
+
+
+def _registrar_excecao_thread(args):
+    logging.error(
+        'Erro nao tratado em thread',
+        exc_info=(args.exc_type, args.exc_value, args.exc_traceback),
+    )
+
+
+sys.excepthook = _registrar_excecao
+threading.excepthook = _registrar_excecao_thread
+
+_mutex = None
 
 
 def caminho_recurso(relativo):
@@ -324,42 +350,45 @@ def fechar_cobranca():
 
 
 def vigiar():
-    global bloco_atual_vigia_id
+    global bloco_atual_vigia_id, ignorado_ate
     print(f'[Chrono] Vigia ligado. Verificando agenda e apps a cada {INTERVALO}s.')
     while True:
         time.sleep(INTERVALO)
+        try:
+            if not app_ativado:
+                if cobranca_aberta():
+                    fechar_cobranca()
+                continue
 
-        if not app_ativado:
-            if cobranca_aberta():
-                fechar_cobranca()
-            continue
+            bloco = agenda.obter_bloco_atual()
 
-        bloco = agenda.obter_bloco_atual()
+            if bloco and bloco['id'] != bloco_atual_vigia_id:
+                bloco_atual_vigia_id = bloco['id']
+                ignorado_ate = None
+                if bloco_atual_vigia_id not in sonecas_por_bloco:
+                    sonecas_por_bloco[bloco_atual_vigia_id] = 0
 
-        if bloco and bloco['id'] != bloco_atual_vigia_id:
-            bloco_atual_vigia_id = bloco['id']
-            if bloco_atual_vigia_id not in sonecas_por_bloco:
-                sonecas_por_bloco[bloco_atual_vigia_id] = 0
+            if bloco is None or bloco['modo'] != 'foco':
+                bloco_atual_vigia_id = None
+                if cobranca_aberta():
+                    fechar_cobranca()
+                continue
 
-        if bloco is None or bloco['modo'] != 'foco':
-            bloco_atual_vigia_id = None
-            if cobranca_aberta():
-                fechar_cobranca()
-            continue
+            if ignorado_ate and time.time() < ignorado_ate:
+                continue
 
-        if ignorado_ate and time.time() < ignorado_ate:
-            continue
+            apps_bloqueados = apps.listar_apps()
+            if not apps_bloqueados:
+                continue
 
-        apps_bloqueados = apps.listar_apps()
-        if not apps_bloqueados:
-            continue
-
-        for app_vigiado in apps_bloqueados:
-            if app_aberto(app_vigiado['processo']):
-                if not cobranca_aberta():
-                    print(f'[Chrono] App proibido "{app_vigiado["nome"]}" aberto durante foco -> cobrando!')
-                    mostrar_cobranca()
-                break
+            for app_vigiado in apps_bloqueados:
+                if app_aberto(app_vigiado['processo']):
+                    if not cobranca_aberta():
+                        print(f'[Chrono] App proibido "{app_vigiado["nome"]}" aberto durante foco -> cobrando!')
+                        mostrar_cobranca()
+                    break
+        except Exception:
+            logging.exception('Erro no ciclo do vigia')
 
 
 def ao_fechar_janela():
@@ -393,7 +422,12 @@ def tamanho_janela(proporcao_largura=0.52, proporcao_altura=0.65):
 
 
 def main():
-    global janela_principal
+    global janela_principal, _mutex
+    _mutex = ctypes.windll.kernel32.CreateMutexW(None, False, 'Chrono-6751403F-Mutex')
+    if ctypes.windll.kernel32.GetLastError() == 183:
+        print('[Chrono] Ja existe uma instancia rodando. Encerrando esta.')
+        sys.exit(0)
+
     banco.criar_tabela()
     agenda.criar_tabela()
     apps.criar_tabela()
