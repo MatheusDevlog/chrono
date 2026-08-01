@@ -167,19 +167,53 @@
       <section class="view" id="view-estatisticas">
         <header class="view-topo">
           <h1 class="view-titulo">Estatísticas</h1>
-          <p class="view-descricao">Seu desempenho ao longo do tempo.</p>
+          <p class="view-descricao">Você contra você mesmo. Bata o seu melhor dia.</p>
+          <div class="estat-abas">
+            <button class="btn-pixel estat-aba ativo" data-estat="hoje">Hoje</button>
+            <button class="btn-pixel estat-aba" data-estat="semana">Semana</button>
+            <button class="btn-pixel estat-aba" data-estat="mes">Mês</button>
+          </div>
         </header>
-        <div class="estat-abas">
-          <button class="estat-aba ativo" data-estat="semana">Semana</button>
-          <button class="estat-aba" data-estat="horarios">Horários</button>
-          <button class="estat-aba" data-estat="mes">Mês</button>
+
+        <div class="estat-conteudo">
+          <div class="estat-bloco estat-bloco--full">
+            <div class="heroi">
+              <div class="heroi-topo">
+                <span class="heroi-label">HOJE</span>
+                <span class="selo-vs neutro" id="estat-selo"></span>
+              </div>
+              <div class="hp-num"><span id="estat-hp">0</span><small> / 100</small></div>
+              <div class="escudo" id="estat-escudo"></div>
+              <div class="estat-hpbar">
+                <div class="estat-hpfill" id="estat-hpfill"></div>
+                <div class="estat-hpshield" id="estat-hpshield"></div>
+              </div>
+              <div class="heroi-stats" id="estat-herostats"></div>
+              <div class="heroi-msg" id="estat-msg"></div>
+            </div>
+          </div>
+
+          <div class="estat-bloco estat-bloco--full">
+            <h2 class="estat-secao-titulo">Você vs Você</h2>
+            <div class="ranking" id="estat-ranking"></div>
+          </div>
+
+          <div class="estat-bloco">
+            <h2 class="estat-secao-titulo">No período — <span id="estat-periodo">Hoje</span></h2>
+            <div class="metricas" id="estat-metricas"></div>
+          </div>
+
+          <div class="estat-bloco">
+            <h2 class="estat-secao-titulo" id="estat-grafico-titulo">HP ao terminar cada dia</h2>
+            <div class="grafico-wrap">
+              <div class="grafico">
+                <div class="eixo-y" id="estat-eixoy"><span>100</span><span>50</span><span>0</span></div>
+                <div class="barras" id="estat-barras"></div>
+              </div>
+              <p class="legenda" id="estat-legenda"></p>
+            </div>
+          </div>
         </div>
-        <div class="grafico-container" id="grafico-container">
-          <div class="grafico-eixo-y" id="grafico-eixo-y"></div>
-          <div class="grafico-barras" id="grafico-barras"></div>
-          <div class="grafico-eixo-x" id="grafico-eixo-x"></div>
-        </div>
-        <div class="grafico-total" id="grafico-total"></div>
       </section>
     </main>
   </div>

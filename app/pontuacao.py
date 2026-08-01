@@ -251,6 +251,129 @@ def melhor_hp_registro():
     return melhor
 
 
+def _hp_do_dia(ganho, dano):
+    shield = min(50, ganho)
+    dn_hp = dano - min(dano, shield)
+    return max(0, 100 - dn_hp)
+
+
+def hp_por_dia(inicio, fim):
+    conexao = conectar()
+    conexao.row_factory = sqlite3.Row
+    cursor = conexao.execute(
+        "SELECT data, "
+        "COALESCE(SUM(CASE WHEN pontos > 0 THEN pontos ELSE 0 END), 0) as ganho, "
+        "COALESCE(SUM(CASE WHEN pontos < 0 THEN -pontos ELSE 0 END), 0) as dano, "
+        "COUNT(*) as eventos "
+        "FROM pontuacao WHERE data >= ? AND data <= ? GROUP BY data",
+        (inicio, fim),
+    )
+    por_data = {linha['data']: linha for linha in cursor.fetchall()}
+    conexao.close()
+
+    resultado = []
+    dia = datetime.date.fromisoformat(inicio)
+    fim_data = datetime.date.fromisoformat(fim)
+    while dia <= fim_data:
+        chave = dia.isoformat()
+        linha = por_data.get(chave)
+        if linha and linha['eventos'] > 0:
+            resultado.append({'data': chave, 'hp': _hp_do_dia(linha['ganho'], linha['dano']), 'atividade': True})
+        else:
+            resultado.append({'data': chave, 'hp': 0, 'atividade': False})
+        dia += datetime.timedelta(days=1)
+    return resultado
+
+
+def hp_dia_simples(data_str):
+    conexao = conectar()
+    conexao.row_factory = sqlite3.Row
+    cursor = conexao.execute(
+        "SELECT COALESCE(SUM(CASE WHEN pontos > 0 THEN pontos ELSE 0 END), 0) as ganho, "
+        "COALESCE(SUM(CASE WHEN pontos < 0 THEN -pontos ELSE 0 END), 0) as dano, "
+        "COUNT(*) as eventos FROM pontuacao WHERE data = ?",
+        (data_str,),
+    )
+    linha = cursor.fetchone()
+    conexao.close()
+    if linha['eventos'] == 0:
+        return 0
+    return _hp_do_dia(linha['ganho'], linha['dano'])
+
+
+def ranking_recente(n=6):
+    hoje_data = datetime.date.today()
+    dias = []
+    for i in range(n):
+        d = hoje_data - datetime.timedelta(days=i)
+        if i == 0:
+            hp = calcular_hp_dia(d.isoformat())['hp']
+        else:
+            hp = hp_dia_simples(d.isoformat())
+        dias.append({'data': d.isoformat(), 'hp': hp})
+    return dias
+
+
+def media_hp(inicio, fim):
+    dias = [d['hp'] for d in hp_por_dia(inicio, fim) if d['atividade']]
+    if not dias:
+        return 0
+    return round(sum(dias) / len(dias))
+
+
+def melhor_hp_dia(inicio=None, fim=None):
+    if inicio is None or fim is None:
+        conexao = conectar()
+        cursor = conexao.execute("SELECT MIN(data), MAX(data) FROM pontuacao")
+        limites = cursor.fetchone()
+        conexao.close()
+        if not limites or limites[0] is None:
+            return None
+        inicio, fim = limites[0], limites[1]
+    dias = [d for d in hp_por_dia(inicio, fim) if d['atividade']]
+    if not dias:
+        return None
+    melhor = max(dias, key=lambda d: d['hp'])
+    return {'valor': melhor['hp'], 'data': melhor['data']}
+
+
+def dias_perfeitos(inicio, fim):
+    conexao = conectar()
+    conexao.row_factory = sqlite3.Row
+    cursor = conexao.execute(
+        "SELECT data, "
+        "SUM(CASE WHEN motivo = 'completou_foco' THEN 1 ELSE 0 END) as focos, "
+        "SUM(CASE WHEN pontos < 0 THEN 1 ELSE 0 END) as danos "
+        "FROM pontuacao WHERE data >= ? AND data <= ? GROUP BY data",
+        (inicio, fim),
+    )
+    linhas = cursor.fetchall()
+    conexao.close()
+    return sum(1 for linha in linhas if linha['focos'] > 0 and linha['danos'] == 0)
+
+
+def sessoes_foco(inicio, fim):
+    conexao = conectar()
+    cursor = conexao.execute(
+        "SELECT COUNT(*) FROM pontuacao WHERE data >= ? AND data <= ? AND motivo = 'completou_foco'",
+        (inicio, fim),
+    )
+    total = cursor.fetchone()[0]
+    conexao.close()
+    return total
+
+
+def dano_total(inicio, fim):
+    conexao = conectar()
+    cursor = conexao.execute(
+        "SELECT COALESCE(SUM(-pontos), 0) FROM pontuacao WHERE data >= ? AND data <= ? AND pontos < 0",
+        (inicio, fim),
+    )
+    total = cursor.fetchone()[0]
+    conexao.close()
+    return total
+
+
 def montar_ranking():
     hp_info = calcular_hp_dia()
     streak_atual, streak_max = calcular_streak()
@@ -289,26 +412,6 @@ def _escolher_mensagem(streak, hp, shield):
     return "O tempo está prestes a te mostrar quem você realmente é."
 
 
-def pontos_por_dia_semana(inicio, fim):
-    conexao = conectar()
-    conexao.row_factory = sqlite3.Row
-    cursor = conexao.execute(
-        "SELECT data, SUM(pontos) as total FROM pontuacao "
-        "WHERE data >= ? AND data <= ? "
-        "GROUP BY data ORDER BY data",
-        (inicio, fim),
-    )
-    linhas = cursor.fetchall()
-    conexao.close()
-
-    dias = {}
-    for linha in linhas:
-        d = datetime.date.fromisoformat(linha['data'])
-        dia_sem = d.weekday()
-        dias[dia_sem] = dias.get(dia_sem, 0) + linha['total']
-    return [dias.get(i, 0) for i in range(7)]
-
-
 def pontos_por_faixa_horario(inicio, fim):
     conexao = conectar()
     conexao.row_factory = sqlite3.Row
@@ -333,27 +436,3 @@ def pontos_por_faixa_horario(inicio, fim):
         else:
             faixas['madrugada'] += pts
     return faixas
-
-
-def pontos_por_semana_mes(inicio, fim):
-    conexao = conectar()
-    conexao.row_factory = sqlite3.Row
-    cursor = conexao.execute(
-        "SELECT data, SUM(pontos) as total FROM pontuacao "
-        "WHERE data >= ? AND data <= ? "
-        "GROUP BY data ORDER BY data",
-        (inicio, fim),
-    )
-    linhas = cursor.fetchall()
-    conexao.close()
-
-    semanas = {}
-    for linha in linhas:
-        d = datetime.date.fromisoformat(linha['data'])
-        dia_semana = d.weekday()
-        diff = (d - datetime.date.fromisoformat(inicio)).days
-        num_semana = diff // 7
-        num_semana = min(num_semana, 3)
-        semanas[num_semana] = semanas.get(num_semana, 0) + linha['total']
-
-    return [semanas.get(i, 0) for i in range(4)]
