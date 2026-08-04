@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chrono - Hora de esticar</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #12302D;
+      color: #F2EEE6;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      height: 100vh; margin: 0; text-align: center;
+    }
+    h1 { font-size: 20px; margin: 0 0 8px; color: #57C4E6; }
+    #mensagem { color: #A6BAB5; margin: 0 24px 20px; font-size: 14px; }
+    button {
+      font-size: 14px; padding: 10px 28px;
+      border: none; border-radius: 8px; cursor: pointer;
+      background: #57C4E6; color: #12302D; font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <h1>Hora de esticar! 🧍</h1>
+  <p id="mensagem">Levante, estique o corpo e descanse os olhos por um instante.<br>Seu foco agradece.</p>
+  <button onclick="estiquei()">Já estiquei 💪</button>
+  <script>
+    function estiquei() {
+      if (window.pywebview) window.pywebview.api.estiquei()
+    }
+    // Fecha sozinho depois de 30s, caso a pessoa tenha saído.
+    setTimeout(estiquei, 30000)
+  </script>
+</body>
+</html>

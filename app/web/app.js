@@ -51,6 +51,18 @@ async function sincronizarEstado() {
   aplicarEstado(ativo)
 }
 
+const avisoUpdate = document.getElementById('aviso-update')
+const btnUpdate = document.getElementById('btn-update')
+
+async function checarAtualizacao() {
+  if (!window.pywebview) return
+  const u = await window.pywebview.api.verificar_atualizacao()
+  if (!u || !u.tem) return
+  document.getElementById('update-versao').textContent = u.versao
+  avisoUpdate.classList.remove('escondido')
+  btnUpdate.onclick = () => window.pywebview.api.abrir_pagina_atualizacao(u.url)
+}
+
 function formatarDuracao(segundos) {
   const min = Math.floor(segundos / 60)
   const seg = segundos % 60
@@ -223,10 +235,12 @@ montarAbas()
 if (window.pywebview) {
   carregarPlacar()
   sincronizarEstado()
+  checarAtualizacao()
 } else {
   window.addEventListener('pywebviewready', () => {
     carregarPlacar()
     sincronizarEstado()
+    checarAtualizacao()
   })
 }
 
