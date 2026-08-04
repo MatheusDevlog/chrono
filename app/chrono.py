@@ -10,6 +10,7 @@ import webview
 
 import agenda
 import apps
+import atualizacao
 import banco
 import bandeja
 import pontuacao
@@ -48,6 +49,7 @@ def caminho_recurso(relativo):
 
 ARQUIVO_UI = caminho_recurso(os.path.join('web', 'index.html'))
 ARQUIVO_COBRANCA = caminho_recurso(os.path.join('web', 'cobranca.html'))
+ARQUIVO_ESTICAR = caminho_recurso(os.path.join('web', 'esticar.html'))
 
 tarefas_concluidas = False
 janela_cobranca = None
@@ -60,6 +62,9 @@ ignorado_ate = None
 sonecas_por_bloco = {}
 bloco_atual_vigia_id = None
 app_ativado = False
+
+janela_esticar = None
+proxima_esticada = None
 
 class API:
     def iniciar_foco(self):
@@ -134,12 +139,23 @@ class API:
     def alternar_chrono(self):
         global app_ativado
         app_ativado = not app_ativado
+        pontuacao.salvar_config('app_ativado', '1' if app_ativado else '0')
         estado = 'ativado' if app_ativado else 'desativado'
         print(f'[Chrono] App {estado}.')
         return app_ativado
 
     def esta_ativado(self):
         return app_ativado
+
+    def estiquei(self):
+        print('[Chrono] Alongamento feito. Fechando lembrete.')
+        fechar_esticar()
+
+    def verificar_atualizacao(self):
+        return atualizacao.verificar()
+
+    def abrir_pagina_atualizacao(self, url):
+        atualizacao.abrir_download(url)
 
     def obter_ranking(self):
         return pontuacao.montar_ranking()
@@ -349,8 +365,31 @@ def fechar_cobranca():
     janela_cobranca = None
 
 
+def esticar_aberta():
+    return janela_esticar is not None and janela_esticar in webview.windows
+
+
+def mostrar_esticar():
+    global janela_esticar
+    janela_esticar = webview.create_window(
+        'Chrono - Hora de esticar',
+        url=ARQUIVO_ESTICAR,
+        js_api=api,
+        on_top=True,
+        width=420,
+        height=220,
+    )
+
+
+def fechar_esticar():
+    global janela_esticar
+    if esticar_aberta():
+        janela_esticar.destroy()
+    janela_esticar = None
+
+
 def vigiar():
-    global bloco_atual_vigia_id, ignorado_ate
+    global bloco_atual_vigia_id, ignorado_ate, proxima_esticada
     print(f'[Chrono] Vigia ligado. Verificando agenda e apps a cada {INTERVALO}s.')
     while True:
         time.sleep(INTERVALO)
@@ -358,6 +397,8 @@ def vigiar():
             if not app_ativado:
                 if cobranca_aberta():
                     fechar_cobranca()
+                if esticar_aberta():
+                    fechar_esticar()
                 continue
 
             bloco = agenda.obter_bloco_atual()
@@ -367,12 +408,27 @@ def vigiar():
                 ignorado_ate = None
                 if bloco_atual_vigia_id not in sonecas_por_bloco:
                     sonecas_por_bloco[bloco_atual_vigia_id] = 0
+                # Agenda o próximo lembrete de esticar ao entrar num bloco de foco.
+                intervalo_min = bloco['pausa_intervalo_min'] if bloco['modo'] == 'foco' else None
+                proxima_esticada = (time.time() + intervalo_min * 60) if intervalo_min else None
+                if esticar_aberta():
+                    fechar_esticar()
 
             if bloco is None or bloco['modo'] != 'foco':
                 bloco_atual_vigia_id = None
+                proxima_esticada = None
                 if cobranca_aberta():
                     fechar_cobranca()
+                if esticar_aberta():
+                    fechar_esticar()
                 continue
+
+            # Lembrete de esticar: só dispara se não houver cobrança na tela.
+            if proxima_esticada and time.time() >= proxima_esticada and not cobranca_aberta():
+                if not esticar_aberta():
+                    print('[Chrono] Hora de esticar!')
+                    mostrar_esticar()
+                proxima_esticada = time.time() + bloco['pausa_intervalo_min'] * 60
 
             if ignorado_ate and time.time() < ignorado_ate:
                 continue
@@ -422,7 +478,7 @@ def tamanho_janela(proporcao_largura=0.52, proporcao_altura=0.65):
 
 
 def main():
-    global janela_principal, _mutex
+    global janela_principal, _mutex, app_ativado
     _mutex = ctypes.windll.kernel32.CreateMutexW(None, False, 'Chrono-6751403F-Mutex')
     if ctypes.windll.kernel32.GetLastError() == 183:
         print('[Chrono] Ja existe uma instancia rodando. Encerrando esta.')
@@ -432,6 +488,9 @@ def main():
     agenda.criar_tabela()
     apps.criar_tabela()
     pontuacao.criar_tabela()
+
+    app_ativado = pontuacao.obter_config('app_ativado', '0') == '1'
+    print(f'[Chrono] Estado inicial: {"ativado" if app_ativado else "desativado"}.')
 
     largura, altura = tamanho_janela()
 

@@ -874,3 +874,25 @@ svg { image-rendering: pixelated; }
 .modal-dia.escolhido { background: var(--marca); color: var(--texto); }
 
 .modal-acoes { display: flex; gap: 12px; justify-content: flex-end; }
+
+.aviso-update {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  padding: 10px 18px;
+  background: var(--superficie-2);
+  border: 1px solid var(--info);
+  border-radius: 8px;
+  color: var(--texto);
+  font-size: 14px;
+}
+
+.aviso-update b { color: var(--info); }
+
+.aviso-update .btn-pixel {
+  background: var(--info);
+  color: var(--fundo);
+}

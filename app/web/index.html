@@ -23,6 +23,11 @@
     <main class="conteudo">
       <section class="view ativa" id="view-inicio">
         <div class="painel-inicio">
+          <div class="aviso-update escondido" id="aviso-update">
+            <span>Nova versão <b id="update-versao"></b> disponível!</span>
+            <button class="btn-pixel" id="btn-update">Baixar</button>
+          </div>
+
           <button id="btn-ativar" class="botao-ativar desativado">
             <span class="btn-face">
               <svg class="btn-icone" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -120,7 +125,7 @@
 
           <label class="campo" id="campo-pausa">
             <span>Esticar a cada (min)</span>
-            <input type="number" id="bloco-pausa" min="0" step="5" placeholder="opcional">
+            <input type="number" id="bloco-pausa" min="1" step="1" placeholder="opcional">
           </label>
 
           <p class="form-erro escondido" id="bloco-erro">O horário de fim precisa ser depois do início.</p>
